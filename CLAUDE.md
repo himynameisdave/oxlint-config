@@ -17,7 +17,7 @@ Shareable oxlint config package. The product IS the rule decisions — treat `sr
 - `src/svelte.ts` — `.svelte`/`.svelte.ts` overrides only
 - `src/type-aware.ts` — tsgolint rules + `options.typeAware` + handoff-offs for base rules the TS versions supersede
 - `src/index.ts` — re-exports + kitchen-sink default
-- `scripts/check-coverage.mjs` — exhaustiveness gate (see iron rule 1)
+- `scripts/check-coverage.ts` — exhaustiveness gate (see iron rule 1)
 - `oxlint.config.ts` — self-lint config; imports from `dist/`, so build first
 
 ## Commands

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Verifies the configs are exhaustive against the INSTALLED oxlint version:
  *
@@ -9,11 +8,16 @@
  *
  * Exits non-zero with a diff when oxlint added/removed/renamed rules, which is
  * the signal to run the update workflow (.claude/skills/update-oxlint-rules).
+ *
+ * Runs under bun (TypeScript, no build step); imports the compiled configs from
+ * dist/, so `check-coverage` runs tsc first.
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import base from '../dist/base.js';
+import typeAware from '../dist/type-aware.js';
 
 const PLUGINS = ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'node', 'jsdoc'];
 const CATEGORIES = [
@@ -27,35 +31,31 @@ const CATEGORIES = [
 ];
 
 // --- 1. Registered rules from oxlint's own types -----------------------------
-const dts = readFileSync(
-	new URL('../node_modules/oxlint/dist/index.d.ts', import.meta.url),
-	'utf8'
-);
+const dts = readFileSync(new URL('../node_modules/oxlint/dist/index.d.ts', import.meta.url), 'utf8');
 const mapStart = dts.indexOf('interface DummyRuleMap {');
 const mapBody = dts.slice(mapStart, dts.indexOf('\n}', mapStart));
-const prefixed = [...mapBody.matchAll(/"(?<name>[a-z0-9-]+\/[a-z0-9-]+)"\?/gu)].map((m) => m[1]);
+const prefixed = [...mapBody.matchAll(/"(?<name>[a-z0-9-]+\/[a-z0-9-]+)"\?/gu)].map(
+	(match) => match[1] ?? ''
+);
 const bare = [...mapBody.matchAll(/\n {2}"?(?<name>[a-zA-Z0-9/-]+)"?\?:/gu)]
-	.map((m) => m[1])
-	.filter((k) => !k.includes('/'));
-const registered = new Set([
-	...prefixed.filter((r) => PLUGINS.includes(r.split('/')[0])),
-	...bare.map((r) => `eslint/${r}`)
+	.map((match) => match[1] ?? '')
+	.filter((key) => !key.includes('/'));
+const registered = new Set<string>([
+	...prefixed.filter((rule) => PLUGINS.includes(rule.split('/')[0] ?? '')),
+	...bare.map((rule) => `eslint/${rule}`)
 ]);
 
 // --- 2. Category resolution via --print-config -------------------------------
 const workDir = mkdtempSync(join(tmpdir(), 'oxlint-coverage-'));
-const categoryOf = new Map();
+const categoryOf = new Map<string, string>();
 for (const category of CATEGORIES) {
 	const configPath = join(workDir, `${category}.json`);
-	writeFileSync(
-		configPath,
-		JSON.stringify({ plugins: PLUGINS, categories: { [category]: 'error' } })
-	);
+	writeFileSync(configPath, JSON.stringify({ plugins: PLUGINS, categories: { [category]: 'error' } }));
 	const printed = execFileSync('./node_modules/.bin/oxlint', ['--print-config', '-c', configPath], {
 		encoding: 'utf8'
 	});
-	const { rules } = JSON.parse(printed);
-	for (const [name, severity] of Object.entries(rules)) {
+	const parsed = JSON.parse(printed) as { rules: Record<string, string> };
+	for (const [name, severity] of Object.entries(parsed.rules)) {
 		if (severity !== 'deny') {
 			continue;
 		}
@@ -64,14 +64,13 @@ for (const category of CATEGORIES) {
 }
 
 // --- 3. Compare against our shipped configs ----------------------------------
-const { default: base } = await import('../dist/base.js');
-const { default: typeAware } = await import('../dist/type-aware.js');
-const configured = new Map();
+const configured = new Map<string, string>();
 for (const [file, config] of Object.entries({ 'base.ts': base, 'type-aware.ts': typeAware })) {
-	for (const [name, severity] of Object.entries(config.rules)) {
+	for (const [name, entry] of Object.entries(config.rules ?? {})) {
+		const severity = Array.isArray(entry) ? entry[0] : entry;
+		const firstFile = configured.get(name);
 		// A later config re-declaring a rule as "off" is a deliberate handoff
 		// (type-aware supersedes a base syntax rule); two ACTIVE entries are a bug.
-		const firstFile = configured.get(name);
 		if (firstFile !== undefined && severity !== 'off') {
 			console.error(`DUPLICATE: ${name} active in both ${firstFile} and ${file}`);
 			process.exitCode = 1;
@@ -81,21 +80,21 @@ for (const [file, config] of Object.entries({ 'base.ts': base, 'type-aware.ts': 
 }
 
 const missing = [...registered]
-	.filter((r) => !configured.has(r))
+	.filter((rule) => !configured.has(rule))
 	.toSorted((a, b) => a.localeCompare(b));
 const stale = [...configured.keys()]
-	.filter((r) => !registered.has(r))
+	.filter((rule) => !registered.has(rule))
 	.toSorted((a, b) => a.localeCompare(b));
 
 if (missing.length > 0) {
-	console.error(`MISSING (registered in oxlint, not decided in any config):`);
+	console.error('MISSING (registered in oxlint, not decided in any config):');
 	for (const rule of missing) {
 		console.error(`  ${rule}  [${categoryOf.get(rule) ?? 'uncategorized'}]`);
 	}
 	process.exitCode = 1;
 }
 if (stale.length > 0) {
-	console.error(`STALE (configured, but no longer registered in oxlint):`);
+	console.error('STALE (configured, but no longer registered in oxlint):');
 	for (const rule of stale) {
 		console.error(`  ${rule}`);
 	}

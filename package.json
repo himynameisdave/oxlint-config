@@ -48,7 +48,7 @@
 	"scripts": {
 		"build": "tsc",
 		"lint": "tsc && oxlint -c oxlint.config.ts --deny-warnings",
-		"check-coverage": "tsc && node scripts/check-coverage.mjs",
+		"check-coverage": "tsc && bun scripts/check-coverage.ts",
 		"prepublishOnly": "npm run build",
 		"format": "oxfmt --write",
 		"format:check": "oxfmt --check"
