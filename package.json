@@ -45,6 +45,9 @@
 			"default": "./dist/type-aware.js"
 		}
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "tsc",
 		"lint": "tsc && oxlint -c oxlint.config.ts --deny-warnings",
@@ -64,8 +67,5 @@
 	},
 	"peerDependencies": {
 		"oxlint": ">=1.46.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }
