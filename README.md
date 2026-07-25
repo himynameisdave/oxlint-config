@@ -21,6 +21,14 @@ For type-aware linting (you want this), also grab [`oxlint-tsgolint`](https://gi
 bun add -D oxlint-tsgolint
 ```
 
+Not a bun user? It's a regular npm package — any package manager works:
+
+```bash
+npm install -D oxlint @himynameisdave/oxlint-config
+pnpm add -D oxlint @himynameisdave/oxlint-config
+yarn add -D oxlint @himynameisdave/oxlint-config
+```
+
 Requires `oxlint >= 1.46.0` (config `extends` support). Type-aware linting requires TypeScript 7+.
 
 ## Configurations
