@@ -1,7 +1,7 @@
-# oxlint-config-himynameisdave
+# @himynameisdave/oxlint-config
 
-[![npm version](https://img.shields.io/npm/v/oxlint-config-himynameisdave.svg)](https://www.npmjs.com/package/oxlint-config-himynameisdave)
-[![license](https://img.shields.io/npm/l/oxlint-config-himynameisdave.svg)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/%40himynameisdave%2Foxlint-config.svg)](https://www.npmjs.com/package/@himynameisdave/oxlint-config)
+[![license](https://img.shields.io/npm/l/%40himynameisdave%2Foxlint-config.svg)](./LICENSE)
 
 > An opinionated [oxlint](https://oxc.rs/docs/guide/usage/linter.html) config, by and for [himynameisdave](https://github.com/himynameisdave).
 
@@ -10,7 +10,7 @@ The spiritual successor to [eslint-config-himynameisdave](https://github.com/him
 ## Installation
 
 ```bash
-bun add -D oxlint oxlint-config-himynameisdave
+bun add -D oxlint @himynameisdave/oxlint-config
 ```
 
 For type-aware linting (you want this), also grab [`oxlint-tsgolint`](https://github.com/oxc-project/tsgolint):
@@ -25,10 +25,10 @@ Requires `oxlint >= 1.46.0` (config `extends` support). Type-aware linting requi
 
 | Config       | Import                                    | What it is                                                                 |
 | ------------ | ----------------------------------------- | -------------------------------------------------------------------------- |
-| `base`       | `oxlint-config-himynameisdave/base`       | Core JS/TS rules. No framework assumptions. Start here.                    |
-| `svelte`     | `oxlint-config-himynameisdave/svelte`     | Overrides for `.svelte`/`.svelte.ts` files (runes use `let`, etc).         |
-| `type-aware` | `oxlint-config-himynameisdave/type-aware` | Rules needing type info. Requires `oxlint-tsgolint` + `--type-aware`.      |
-| *(default)*  | `oxlint-config-himynameisdave`            | Kitchen sink: all of the above.                                            |
+| `base`       | `@himynameisdave/oxlint-config/base`       | Core JS/TS rules. No framework assumptions. Start here.                    |
+| `svelte`     | `@himynameisdave/oxlint-config/svelte`     | Overrides for `.svelte`/`.svelte.ts` files (runes use `let`, etc).         |
+| `type-aware` | `@himynameisdave/oxlint-config/type-aware` | Rules needing type info. Requires `oxlint-tsgolint` + `--type-aware`.      |
+| *(default)*  | `@himynameisdave/oxlint-config`            | Kitchen sink: all of the above.                                            |
 
 ## Usage
 
@@ -37,9 +37,9 @@ Composable — a SvelteKit project with type-aware linting:
 ```ts
 // oxlint.config.ts
 import { defineConfig } from "oxlint";
-import base from "oxlint-config-himynameisdave/base";
-import svelte from "oxlint-config-himynameisdave/svelte";
-import typeAware from "oxlint-config-himynameisdave/type-aware";
+import base from "@himynameisdave/oxlint-config/base";
+import svelte from "@himynameisdave/oxlint-config/svelte";
+import typeAware from "@himynameisdave/oxlint-config/type-aware";
 
 export default defineConfig({
 	extends: [base, svelte, typeAware],
@@ -54,7 +54,7 @@ All-in-one:
 ```ts
 // oxlint.config.ts
 import { defineConfig } from "oxlint";
-import config from "oxlint-config-himynameisdave";
+import config from "@himynameisdave/oxlint-config";
 
 export default defineConfig({
 	extends: [config],
@@ -79,7 +79,7 @@ oxlint -c oxlint.config.ts --deny-warnings
 
 `typescript` · `unicorn` · `oxc` · `import` · `promise` · `node` · `jsdoc` (plus the core `eslint` rules)
 
-The `jsdoc` stance: validate the JSDoc that exists, never require JSDoc to exist. Doc coverage is a code-review expectation, not a lint gate.
+The `jsdoc` stance: exported symbols should be documented; internal code doesn't have to be. Any JSDoc you *do* write must be complete and descriptive (a partial `@param` list or a bare `@returns` errors), and types never go in JSDoc — TypeScript owns them. oxlint has no `require-jsdoc` rule yet, so *existence* of docs on exports stays a review expectation until upstream ships one (this config will adopt it with `publicOnly` when it lands).
 
 ## Common overrides
 

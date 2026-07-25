@@ -1,5 +1,5 @@
 {
-	"name": "oxlint-config-himynameisdave",
+	"name": "@himynameisdave/oxlint-config",
 	"version": "1.0.0",
 	"description": "An opinionated oxlint config, by and for himynameisdave.",
 	"type": "module",

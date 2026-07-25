@@ -14,7 +14,7 @@ export { default as typeAware } from "./type-aware.js";
  * For à la carte composition, extend the named exports instead:
  *
  * ```ts
- * import base from "oxlint-config-himynameisdave/base";
+ * import base from "@himynameisdave/oxlint-config/base";
  * export default defineConfig({ extends: [base] });
  * ```
  */

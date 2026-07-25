@@ -1,4 +1,4 @@
-# oxlint-config-himynameisdave
+# @himynameisdave/oxlint-config
 
 Shareable oxlint config package. The product IS the rule decisions — treat `src/base.ts` and `src/type-aware.ts` as the source of truth consumers read.
 
