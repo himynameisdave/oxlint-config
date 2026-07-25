@@ -473,7 +473,7 @@ export default defineConfig({
 		/* ================================================================== *
 		 * typescript — pedantic
 		 * ================================================================== */
-		// @ts-ignore hides errors forever; @ts-expect-error (with description) self-expires.
+		// A ts-ignore directive hides errors forever; ts-expect-error (with description) self-expires.
 		"typescript/ban-ts-comment": "error",
 		// Deprecated upstream — split into no-wrapper-object-types/no-empty-object-type (both on).
 		"typescript/ban-types": "off",

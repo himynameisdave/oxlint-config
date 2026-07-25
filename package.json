@@ -28,7 +28,7 @@
 	],
 	"scripts": {
 		"build": "tsc",
-		"lint": "oxlint --deny-warnings",
+		"lint": "tsc && oxlint -c oxlint.config.ts --deny-warnings",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
@@ -55,6 +55,7 @@
 	},
 	"devDependencies": {
 		"oxlint": "^1.75.0",
-		"typescript": "^5.9.2"
+		"oxlint-tsgolint": "^7.0.2001",
+		"typescript": "^7.0.0"
 	}
 }
