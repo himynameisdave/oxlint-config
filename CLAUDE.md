@@ -28,7 +28,7 @@ Shareable oxlint config package. The product IS the rule decisions — treat `sr
 - `bun run check-coverage` — build + verify every registered rule is decided
 - `bun run format` / `format:check` — oxfmt (tabs, single quotes, width 100)
 - `bun run test` — all three gates (what CI and np's preflight run)
-- `bun run release` — np: version, publish (scoped → publishConfig already public), tag, GitHub release
+- `bun run release` — np: version, publish (scoped → publishConfig already public), tag, GitHub release. Full walkthrough: PUBLISHING.md
 
 ## Conventions
 
