@@ -22,6 +22,8 @@ For each new rule, in order:
 
 1. **Which plugin + category?** The script prints the category. Find the matching banner section in `src/base.ts`.
 2. **Type-aware?** Check the tsgolint implemented-rules list (https://github.com/oxc-project/tsgolint — or `bunx oxlint --help` / oxc.rs type-aware docs). Type-aware rules go in `src/type-aware.ts` ONLY. Also check the NOTE comment in `type-aware.ts` — `naming-convention` and `prefer-destructuring` are expected to land eventually.
+
+> **Watched-for rule:** if oxlint ships `jsdoc/require-jsdoc`, enable it with `publicOnly: true` (package stance: exported symbols get docs, internal doesn't) and update the jsdoc banner in `base.ts` + the README stance paragraph — both promise this.
 3. **Decide severity** by this package's policy:
    - correctness / suspicious / perf → almost always `"error"`
    - pedantic / style → `"error"` unless it polices formatting (off — oxfmt's job), length/count caps (off — see max-lines stance), or alphabetical sorting (off — see sort-keys stance)

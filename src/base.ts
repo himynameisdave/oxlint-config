@@ -1110,9 +1110,12 @@ export default defineConfig({
 		/* ================================================================== *
 		 * jsdoc
 		 *
-		 * Philosophy: validate the JSDoc that exists; never require JSDoc to exist.
-		 * Doc coverage is a review expectation, not a lint gate — forcing @param/@returns
-		 * tags pushes terse one-line docs toward Javadoc ceremony (per cacographer).
+		 * Stance: every EXPORTED symbol should have JSDoc; internal code doesn't
+		 * need it. oxlint's jsdoc plugin has no require-jsdoc rule yet (upstream's
+		 * has publicOnly — exactly this stance), so existence-on-exports stays a
+		 * review expectation for now. What IS enforced: any doc you do write must
+		 * be complete and descriptive — half-documented is worse than undocumented.
+		 * Types never go in JSDoc; TypeScript owns them.
 		 * ================================================================== */
 		// @property names that don't match the object shape are lies.
 		"jsdoc/check-property-names": "error",
@@ -1122,38 +1125,41 @@ export default defineConfig({
 		"jsdoc/implements-on-classes": "error",
 		// Defaults documented in JSDoc drift from the code's actual defaults.
 		"jsdoc/no-defaults": "error",
-		// Requiring @property tags forces ceremony — validate what exists instead.
+		// Demanding @property blocks on every typedef is ceremony; completeness
+		// rules below govern the ones you write.
 		"jsdoc/require-property": "off",
-		// Same stance: don't require property descriptions.
-		"jsdoc/require-property-description": "off",
-		// Same stance: don't require property names beyond what check-* validates.
-		"jsdoc/require-property-name": "off",
+		// A @property tag with no description tells the reader nothing.
+		"jsdoc/require-property-description": "error",
+		// A @property tag with no name documents nothing at all.
+		"jsdoc/require-property-name": "error",
 		// Types live in TypeScript, not JSDoc annotations.
 		"jsdoc/require-property-type": "off",
-		// Don't require @yields ceremony.
+		// Description-only docs on generators are fine; don't force @yields tags.
 		"jsdoc/require-yields": "off",
-		// Don't require @param blocks on documented functions.
-		"jsdoc/require-param": "off",
-		// Don't require @param descriptions.
-		"jsdoc/require-param-description": "off",
-		// Don't require @param names.
-		"jsdoc/require-param-name": "off",
+		// If you document SOME params you must document them all — a partial list
+		// reads as complete and misleads. One-line description-only docs stay legal
+		// (ignoreWhenAllParamsMissing), which is what keeps this off internal code's back.
+		"jsdoc/require-param": ["error", { ignoreWhenAllParamsMissing: true }],
+		// A @param with no description is a name the signature already shows.
+		"jsdoc/require-param-description": "error",
+		// A @param with no name can't be matched to a parameter.
+		"jsdoc/require-param-name": "error",
 		// Types live in TypeScript; @param {type} duplicates and drifts.
 		"jsdoc/require-param-type": "off",
-		// Don't require @returns.
+		// Description-only docs are fine; don't force a @returns tag onto every function.
 		"jsdoc/require-returns": "off",
-		// Don't require @returns descriptions.
-		"jsdoc/require-returns-description": "off",
+		// But a @returns you did write with no description says nothing.
+		"jsdoc/require-returns-description": "error",
 		// Types live in TypeScript; @returns {type} duplicates and drifts.
 		"jsdoc/require-returns-type": "off",
-		// Don't require @throws types — TypeScript has no throws clause to sync with.
+		// Types live in TypeScript — and it has no throws clause to sync with anyway.
 		"jsdoc/require-throws-type": "off",
-		// Don't require @yields types.
+		// Types live in TypeScript.
 		"jsdoc/require-yields-type": "off",
-		// Don't require @throws descriptions.
-		"jsdoc/require-throws-description": "off",
-		// Don't require @yields descriptions.
-		"jsdoc/require-yields-description": "off",
+		// A @throws with no description doesn't say when or why it throws.
+		"jsdoc/require-throws-description": "error",
+		// A @yields with no description doesn't say what comes out.
+		"jsdoc/require-yields-description": "error",
 		// @access/@public/@private validation — on, since wrong access tags mislead.
 		"jsdoc/check-access": "error",
 		// @param with no name/description is an empty tag — either fill it or delete it.
