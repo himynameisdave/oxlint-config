@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/%40himynameisdave%2Foxlint-config.svg)](https://www.npmjs.com/package/@himynameisdave/oxlint-config)
 [![license](https://img.shields.io/npm/l/%40himynameisdave%2Foxlint-config.svg)](./LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhimynameisdave%2Foxlint-config.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhimynameisdave%2Foxlint-config?ref=badge_shield)
 
 > An opinionated [oxlint](https://oxc.rs/docs/guide/usage/linter.html) config, by and for [himynameisdave](https://github.com/himynameisdave).
 
@@ -101,3 +102,6 @@ Generated code and framework configs go in `ignorePatterns` (the base config onl
 ## License
 
 [MIT](./LICENSE) © [Dave Lunny](https://github.com/himynameisdave)
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhimynameisdave%2Foxlint-config.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhimynameisdave%2Foxlint-config?ref=badge_large)
