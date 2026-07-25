@@ -29,6 +29,7 @@
 	"scripts": {
 		"build": "tsc",
 		"lint": "tsc && oxlint -c oxlint.config.ts --deny-warnings",
+		"check-coverage": "tsc && node scripts/check-coverage.mjs",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
