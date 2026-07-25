@@ -51,9 +51,12 @@
 		"check-coverage": "tsc && bun scripts/check-coverage.ts",
 		"prepublishOnly": "npm run build",
 		"format": "oxfmt --write",
-		"format:check": "oxfmt --check"
+		"format:check": "oxfmt --check",
+		"test": "bun run lint && bun run format:check && bun run check-coverage",
+		"release": "np"
 	},
 	"devDependencies": {
+		"np": "^12.0.0",
 		"oxfmt": "^0.60.0",
 		"oxlint": "^1.75.0",
 		"oxlint-tsgolint": "^7.0.2001",
@@ -61,5 +64,8 @@
 	},
 	"peerDependencies": {
 		"oxlint": ">=1.46.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }
