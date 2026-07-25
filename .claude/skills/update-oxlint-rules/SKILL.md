@@ -24,6 +24,7 @@ For each new rule, in order:
 2. **Type-aware?** Check the tsgolint implemented-rules list (https://github.com/oxc-project/tsgolint — or `bunx oxlint --help` / oxc.rs type-aware docs). Type-aware rules go in `src/type-aware.ts` ONLY. Also check the NOTE comment in `type-aware.ts` — `naming-convention` and `prefer-destructuring` are expected to land eventually.
 
 > **Watched-for rule:** if oxlint ships `jsdoc/require-jsdoc`, enable it with `publicOnly: true` (package stance: exported symbols get docs, internal doesn't) and update the jsdoc banner in `base.ts` + the README stance paragraph — both promise this.
+
 3. **Decide severity** by this package's policy:
    - correctness / suspicious / perf → almost always `"error"`
    - pedantic / style → `"error"` unless it polices formatting (off — oxfmt's job), length/count caps (off — see max-lines stance), or alphabetical sorting (off — see sort-keys stance)
@@ -31,7 +32,7 @@ For each new rule, in order:
    - nursery → `"off"` with a "Nursery: revisit when stabilized" comment
    - `"error"` or `"off"` ONLY — never `"warn"`
 4. **Check for twins.** If the new rule duplicates an existing one (eslint vs unicorn vs import versions), keep exactly one active and comment the handoff on the off one (see `eslint/no-duplicate-imports` → `import/no-duplicates` for the pattern). A new TS type-aware version of an active base rule: enable in `type-aware.ts`, add the base rule to its handoff-offs block.
-5. **Write the comment.** One line, the *why*, not the what. Read neighboring comments for voice.
+5. **Write the comment.** One line, the _why_, not the what. Read neighboring comments for voice.
 
 ## 3. Handle STALE rules
 

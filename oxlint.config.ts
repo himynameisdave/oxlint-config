@@ -1,6 +1,6 @@
-import { defineConfig } from "oxlint";
-import base from "./dist/base.js";
-import typeAware from "./dist/type-aware.js";
+import { defineConfig } from 'oxlint';
+import base from './dist/base.js';
+import typeAware from './dist/type-aware.js';
 
 // Self-lint: this package eats its own dog food (minus svelte — no components
 // here). Imports from dist/ because oxlint loads configs through Node, which
@@ -10,10 +10,10 @@ export default defineConfig({
 	overrides: [
 		{
 			// Repo scripts are CLIs — console IS their output.
-			files: ["scripts/**"],
+			files: ['scripts/**'],
 			rules: {
-				"eslint/no-console": "off",
-			},
-		},
-	],
+				'eslint/no-console': 'off'
+			}
+		}
+	]
 });

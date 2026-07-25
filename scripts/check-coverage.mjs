@@ -10,55 +10,69 @@
  * Exits non-zero with a diff when oxlint added/removed/renamed rules, which is
  * the signal to run the update workflow (.claude/skills/update-oxlint-rules).
  */
-import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-const PLUGINS = ["typescript", "unicorn", "oxc", "import", "promise", "node", "jsdoc"];
-const CATEGORIES = ["correctness", "suspicious", "pedantic", "perf", "style", "restriction", "nursery"];
+const PLUGINS = ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'node', 'jsdoc'];
+const CATEGORIES = [
+	'correctness',
+	'suspicious',
+	'pedantic',
+	'perf',
+	'style',
+	'restriction',
+	'nursery'
+];
 
 // --- 1. Registered rules from oxlint's own types -----------------------------
-const dts = readFileSync(new URL("../node_modules/oxlint/dist/index.d.ts", import.meta.url), "utf8");
-const mapStart = dts.indexOf("interface DummyRuleMap {");
-const mapBody = dts.slice(mapStart, dts.indexOf("\n}", mapStart));
+const dts = readFileSync(
+	new URL('../node_modules/oxlint/dist/index.d.ts', import.meta.url),
+	'utf8'
+);
+const mapStart = dts.indexOf('interface DummyRuleMap {');
+const mapBody = dts.slice(mapStart, dts.indexOf('\n}', mapStart));
 const prefixed = [...mapBody.matchAll(/"(?<name>[a-z0-9-]+\/[a-z0-9-]+)"\?/gu)].map((m) => m[1]);
 const bare = [...mapBody.matchAll(/\n {2}"?(?<name>[a-zA-Z0-9/-]+)"?\?:/gu)]
 	.map((m) => m[1])
-	.filter((k) => !k.includes("/"));
+	.filter((k) => !k.includes('/'));
 const registered = new Set([
-	...prefixed.filter((r) => PLUGINS.includes(r.split("/")[0])),
-	...bare.map((r) => `eslint/${r}`),
+	...prefixed.filter((r) => PLUGINS.includes(r.split('/')[0])),
+	...bare.map((r) => `eslint/${r}`)
 ]);
 
 // --- 2. Category resolution via --print-config -------------------------------
-const workDir = mkdtempSync(join(tmpdir(), "oxlint-coverage-"));
+const workDir = mkdtempSync(join(tmpdir(), 'oxlint-coverage-'));
 const categoryOf = new Map();
 for (const category of CATEGORIES) {
 	const configPath = join(workDir, `${category}.json`);
-	writeFileSync(configPath, JSON.stringify({ plugins: PLUGINS, categories: { [category]: "error" } }));
-	const printed = execFileSync("./node_modules/.bin/oxlint", ["--print-config", "-c", configPath], {
-		encoding: "utf8",
+	writeFileSync(
+		configPath,
+		JSON.stringify({ plugins: PLUGINS, categories: { [category]: 'error' } })
+	);
+	const printed = execFileSync('./node_modules/.bin/oxlint', ['--print-config', '-c', configPath], {
+		encoding: 'utf8'
 	});
 	const { rules } = JSON.parse(printed);
 	for (const [name, severity] of Object.entries(rules)) {
-		if (severity !== "deny") {
+		if (severity !== 'deny') {
 			continue;
 		}
-		categoryOf.set(name.includes("/") ? name : `eslint/${name}`, category);
+		categoryOf.set(name.includes('/') ? name : `eslint/${name}`, category);
 	}
 }
 
 // --- 3. Compare against our shipped configs ----------------------------------
-const { default: base } = await import("../dist/base.js");
-const { default: typeAware } = await import("../dist/type-aware.js");
+const { default: base } = await import('../dist/base.js');
+const { default: typeAware } = await import('../dist/type-aware.js');
 const configured = new Map();
-for (const [file, config] of Object.entries({ "base.ts": base, "type-aware.ts": typeAware })) {
+for (const [file, config] of Object.entries({ 'base.ts': base, 'type-aware.ts': typeAware })) {
 	for (const [name, severity] of Object.entries(config.rules)) {
 		// A later config re-declaring a rule as "off" is a deliberate handoff
 		// (type-aware supersedes a base syntax rule); two ACTIVE entries are a bug.
 		const firstFile = configured.get(name);
-		if (firstFile !== undefined && severity !== "off") {
+		if (firstFile !== undefined && severity !== 'off') {
 			console.error(`DUPLICATE: ${name} active in both ${firstFile} and ${file}`);
 			process.exitCode = 1;
 		}
@@ -66,13 +80,17 @@ for (const [file, config] of Object.entries({ "base.ts": base, "type-aware.ts": 
 	}
 }
 
-const missing = [...registered].filter((r) => !configured.has(r)).toSorted((a, b) => a.localeCompare(b));
-const stale = [...configured.keys()].filter((r) => !registered.has(r)).toSorted((a, b) => a.localeCompare(b));
+const missing = [...registered]
+	.filter((r) => !configured.has(r))
+	.toSorted((a, b) => a.localeCompare(b));
+const stale = [...configured.keys()]
+	.filter((r) => !registered.has(r))
+	.toSorted((a, b) => a.localeCompare(b));
 
 if (missing.length > 0) {
 	console.error(`MISSING (registered in oxlint, not decided in any config):`);
 	for (const rule of missing) {
-		console.error(`  ${rule}  [${categoryOf.get(rule) ?? "uncategorized"}]`);
+		console.error(`  ${rule}  [${categoryOf.get(rule) ?? 'uncategorized'}]`);
 	}
 	process.exitCode = 1;
 }

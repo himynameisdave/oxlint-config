@@ -23,12 +23,12 @@ Requires `oxlint >= 1.46.0` (config `extends` support). Type-aware linting requi
 
 ## Configurations
 
-| Config       | Import                                    | What it is                                                                 |
-| ------------ | ----------------------------------------- | -------------------------------------------------------------------------- |
-| `base`       | `@himynameisdave/oxlint-config/base`       | Core JS/TS rules. No framework assumptions. Start here.                    |
-| `svelte`     | `@himynameisdave/oxlint-config/svelte`     | Overrides for `.svelte`/`.svelte.ts` files (runes use `let`, etc).         |
-| `type-aware` | `@himynameisdave/oxlint-config/type-aware` | Rules needing type info. Requires `oxlint-tsgolint` + `--type-aware`.      |
-| *(default)*  | `@himynameisdave/oxlint-config`            | Kitchen sink: all of the above.                                            |
+| Config       | Import                                     | What it is                                                            |
+| ------------ | ------------------------------------------ | --------------------------------------------------------------------- |
+| `base`       | `@himynameisdave/oxlint-config/base`       | Core JS/TS rules. No framework assumptions. Start here.               |
+| `svelte`     | `@himynameisdave/oxlint-config/svelte`     | Overrides for `.svelte`/`.svelte.ts` files (runes use `let`, etc).    |
+| `type-aware` | `@himynameisdave/oxlint-config/type-aware` | Rules needing type info. Requires `oxlint-tsgolint` + `--type-aware`. |
+| _(default)_  | `@himynameisdave/oxlint-config`            | Kitchen sink: all of the above.                                       |
 
 ## Usage
 
@@ -36,16 +36,16 @@ Composable — a SvelteKit project with type-aware linting:
 
 ```ts
 // oxlint.config.ts
-import { defineConfig } from "oxlint";
-import base from "@himynameisdave/oxlint-config/base";
-import svelte from "@himynameisdave/oxlint-config/svelte";
-import typeAware from "@himynameisdave/oxlint-config/type-aware";
+import { defineConfig } from 'oxlint';
+import base from '@himynameisdave/oxlint-config/base';
+import svelte from '@himynameisdave/oxlint-config/svelte';
+import typeAware from '@himynameisdave/oxlint-config/type-aware';
 
 export default defineConfig({
 	extends: [base, svelte, typeAware],
 	rules: {
 		// Project-specific overrides go here
-	},
+	}
 });
 ```
 
@@ -53,11 +53,11 @@ All-in-one:
 
 ```ts
 // oxlint.config.ts
-import { defineConfig } from "oxlint";
-import config from "@himynameisdave/oxlint-config";
+import { defineConfig } from 'oxlint';
+import config from '@himynameisdave/oxlint-config';
 
 export default defineConfig({
-	extends: [config],
+	extends: [config]
 });
 ```
 
@@ -71,7 +71,7 @@ oxlint -c oxlint.config.ts --deny-warnings
 
 1. **Error, never warn.** A rule is either enforced or it's off. Warnings are noise that scrolls by unfixed forever — run with `--deny-warnings` so nothing can.
 2. **Explicit over implicit.** Every category is set to `"off"`; every active rule is listed by name. What's enforced is greppable, and rule-change diffs read like changelogs.
-3. **Comments are mandatory.** Every rule — on *or* off — has a one-line comment saying *why*. If a decision can't justify itself in one line, it's not a decision yet.
+3. **Comments are mandatory.** Every rule — on _or_ off — has a one-line comment saying _why_. If a decision can't justify itself in one line, it's not a decision yet.
 4. **Strict by default, escape hatches documented.** The base config assumes you want to be told. Common overrides are listed below, not baked in.
 5. **No formatting rules.** Whitespace is [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html)'s job. Anything purely about layout is off.
 
@@ -79,11 +79,11 @@ oxlint -c oxlint.config.ts --deny-warnings
 
 `typescript` · `unicorn` · `oxc` · `import` · `promise` · `node` · `jsdoc` (plus the core `eslint` rules)
 
-The `jsdoc` stance: exported symbols should be documented; internal code doesn't have to be. Any JSDoc you *do* write must be complete and descriptive (a partial `@param` list or a bare `@returns` errors), and types never go in JSDoc — TypeScript owns them. oxlint has no `require-jsdoc` rule yet, so *existence* of docs on exports stays a review expectation until upstream ships one (this config will adopt it with `publicOnly` when it lands).
+The `jsdoc` stance: exported symbols should be documented; internal code doesn't have to be. Any JSDoc you _do_ write must be complete and descriptive (a partial `@param` list or a bare `@returns` errors), and types never go in JSDoc — TypeScript owns them. oxlint has no `require-jsdoc` rule yet, so _existence_ of docs on exports stays a review expectation until upstream ships one (this config will adopt it with `publicOnly` when it lands).
 
 ## Common overrides
 
-Things real projects legitimately relax — add these to *your* config's `rules`/`overrides`, they don't belong in the shared one:
+Things real projects legitimately relax — add these to _your_ config's `rules`/`overrides`, they don't belong in the shared one:
 
 ```ts
 rules: {

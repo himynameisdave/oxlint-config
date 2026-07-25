@@ -2,6 +2,28 @@
 	"name": "@himynameisdave/oxlint-config",
 	"version": "1.0.0",
 	"description": "An opinionated oxlint config, by and for himynameisdave.",
+	"keywords": [
+		"config",
+		"himynameisdave",
+		"lint",
+		"linter",
+		"oxc",
+		"oxlint",
+		"oxlint-config"
+	],
+	"homepage": "https://github.com/himynameisdave/oxlint-config",
+	"bugs": {
+		"url": "https://github.com/himynameisdave/oxlint-config/issues"
+	},
+	"license": "MIT",
+	"author": "Dave Lunny <d@velunny.com>",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/himynameisdave/oxlint-config.git"
+	},
+	"files": [
+		"dist"
+	],
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -23,40 +45,21 @@
 			"default": "./dist/type-aware.js"
 		}
 	},
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"build": "tsc",
 		"lint": "tsc && oxlint -c oxlint.config.ts --deny-warnings",
 		"check-coverage": "tsc && node scripts/check-coverage.mjs",
-		"prepublishOnly": "npm run build"
-	},
-	"keywords": [
-		"oxlint",
-		"oxlint-config",
-		"oxc",
-		"lint",
-		"linter",
-		"config",
-		"himynameisdave"
-	],
-	"author": "Dave Lunny <d@velunny.com>",
-	"license": "MIT",
-	"homepage": "https://github.com/himynameisdave/oxlint-config",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/himynameisdave/oxlint-config.git"
-	},
-	"bugs": {
-		"url": "https://github.com/himynameisdave/oxlint-config/issues"
-	},
-	"peerDependencies": {
-		"oxlint": ">=1.46.0"
+		"prepublishOnly": "npm run build",
+		"format": "oxfmt --write",
+		"format:check": "oxfmt --check"
 	},
 	"devDependencies": {
+		"oxfmt": "^0.60.0",
 		"oxlint": "^1.75.0",
 		"oxlint-tsgolint": "^7.0.2001",
 		"typescript": "^7.0.0"
+	},
+	"peerDependencies": {
+		"oxlint": ">=1.46.0"
 	}
 }
