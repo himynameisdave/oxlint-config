@@ -31,7 +31,10 @@ const CATEGORIES = [
 ];
 
 // --- 1. Registered rules from oxlint's own types -----------------------------
-const dts = readFileSync(new URL('../node_modules/oxlint/dist/index.d.ts', import.meta.url), 'utf8');
+const dts = readFileSync(
+	new URL('../node_modules/oxlint/dist/index.d.ts', import.meta.url),
+	'utf8'
+);
 const mapStart = dts.indexOf('interface DummyRuleMap {');
 const mapBody = dts.slice(mapStart, dts.indexOf('\n}', mapStart));
 const prefixed = [...mapBody.matchAll(/"(?<name>[a-z0-9-]+\/[a-z0-9-]+)"\?/gu)].map(
@@ -50,7 +53,10 @@ const workDir = mkdtempSync(join(tmpdir(), 'oxlint-coverage-'));
 const categoryOf = new Map<string, string>();
 for (const category of CATEGORIES) {
 	const configPath = join(workDir, `${category}.json`);
-	writeFileSync(configPath, JSON.stringify({ plugins: PLUGINS, categories: { [category]: 'error' } }));
+	writeFileSync(
+		configPath,
+		JSON.stringify({ plugins: PLUGINS, categories: { [category]: 'error' } })
+	);
 	const printed = execFileSync('./node_modules/.bin/oxlint', ['--print-config', '-c', configPath], {
 		encoding: 'utf8'
 	});
@@ -66,7 +72,7 @@ for (const category of CATEGORIES) {
 // --- 3. Compare against our shipped configs ----------------------------------
 const configured = new Map<string, string>();
 for (const [file, config] of Object.entries({ 'base.ts': base, 'type-aware.ts': typeAware })) {
-	for (const [name, entry] of Object.entries(config.rules ?? {})) {
+	for (const [name, entry] of Object.entries(config.rules)) {
 		const severity = Array.isArray(entry) ? entry[0] : entry;
 		const firstFile = configured.get(name);
 		// A later config re-declaring a rule as "off" is a deliberate handoff
