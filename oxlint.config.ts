@@ -7,4 +7,13 @@ import typeAware from "./dist/type-aware.js";
 // can't resolve the .ts sources — hence `lint` runs the build first.
 export default defineConfig({
 	extends: [base, typeAware],
+	overrides: [
+		{
+			// Repo scripts are CLIs — console IS their output.
+			files: ["scripts/**"],
+			rules: {
+				"eslint/no-console": "off",
+			},
+		},
+	],
 });
