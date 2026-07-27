@@ -43,6 +43,10 @@
 		"./type-aware": {
 			"types": "./dist/type-aware.d.ts",
 			"default": "./dist/type-aware.js"
+		},
+		"./vitest": {
+			"types": "./dist/vitest.d.ts",
+			"default": "./dist/vitest.js"
 		}
 	},
 	"publishConfig": {

@@ -18,8 +18,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import base from '../dist/base.js';
 import typeAware from '../dist/type-aware.js';
+import vitest from '../dist/vitest.js';
 
-const PLUGINS = ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'node', 'jsdoc'];
+const PLUGINS = ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'node', 'jsdoc', 'vitest'];
 const CATEGORIES = [
 	'correctness',
 	'suspicious',
@@ -71,7 +72,11 @@ for (const category of CATEGORIES) {
 
 // --- 3. Compare against our shipped configs ----------------------------------
 const configured = new Map<string, string>();
-for (const [file, config] of Object.entries({ 'base.ts': base, 'type-aware.ts': typeAware })) {
+for (const [file, config] of Object.entries({
+	'base.ts': base,
+	'type-aware.ts': typeAware,
+	'vitest.ts': vitest
+})) {
 	for (const [name, entry] of Object.entries(config.rules)) {
 		const severity = Array.isArray(entry) ? entry[0] : entry;
 		const firstFile = configured.get(name);
