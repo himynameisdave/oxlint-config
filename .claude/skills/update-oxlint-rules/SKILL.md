@@ -14,7 +14,15 @@ bun add -d oxlint@latest oxlint-tsgolint@latest
 bun run check-coverage
 ```
 
-`check-coverage` prints `MISSING` (new upstream rules with no decision), `STALE` (rules we configure that no longer exist), and `DUPLICATE` (a rule active in both files). If it prints `OK`, only the dep bump needs committing.
+`check-coverage` prints:
+
+- `MISSING` — new upstream rules with no decision. → step 2.
+- `STALE` — rules we configure at top level that no longer exist. → step 3.
+- `STALE (override)` — same, but the dead name is inside an `overrides` block (base's test-file override, or `src/svelte.ts`). Fix it in place: rename to the new rule, or delete the entry if the rule is gone. No top-level decision is needed — overrides only adjust decisions already made.
+- `DUPLICATE` — a rule active in both files.
+- `PROMOTED` — a rule we turned off _purely because_ it was nursery has graduated to a real category. The name didn't change, so nothing else catches this. Make a real severity decision per the step-2 policy, rewrite its comment (it currently says "revisit when stabilized"), move it out of the nursery banner into its new category's section, and delete it from `NURSERY_WATCH` in `scripts/check-coverage.ts`.
+
+If it prints `OK`, only the dep bump needs committing.
 
 ## 2. Classify each MISSING rule
 
@@ -29,14 +37,14 @@ For each new rule, in order:
    - correctness / suspicious / perf → almost always `"error"`
    - pedantic / style → `"error"` unless it polices formatting (off — oxfmt's job), length/count caps (off — see max-lines stance), or alphabetical sorting (off — see sort-keys stance)
    - restriction → judgment call; default `"off"` unless it catches real bugs (see no-console, no-param-reassign for the bar)
-   - nursery → `"off"` with a "Nursery: revisit when stabilized" comment
+   - nursery → `"off"` with a "Nursery: revisit when stabilized" comment, **and** add the rule to `NURSERY_WATCH` in `scripts/check-coverage.ts` so promotion trips the gate. Skip the watchlist if the rule would stay off even once stabilized (see `eslint/no-undef`) — then say that in the comment instead of "revisit when stabilized".
    - `"error"` or `"off"` ONLY — never `"warn"`
 4. **Check for twins.** If the new rule duplicates an existing one (eslint vs unicorn vs import versions), keep exactly one active and comment the handoff on the off one (see `eslint/no-duplicate-imports` → `import/no-duplicates` for the pattern). A new TS type-aware version of an active base rule: enable in `type-aware.ts`, add the base rule to its handoff-offs block.
 5. **Write the comment.** One line, the _why_, not the what. Read neighboring comments for voice.
 
 ## 3. Handle STALE rules
 
-Renamed upstream → move the decision + comment to the new name. Deleted → remove the entry. Check release notes (https://github.com/oxc-project/oxc/releases) when unsure which.
+Renamed upstream → move the decision + comment to the new name. Deleted → remove the entry. Check release notes (https://github.com/oxc-project/oxc/releases) when unsure which. Same call for `STALE (override)`, except the entry lives in an `overrides` block and needs no top-level decision.
 
 ## 4. Verify
 
