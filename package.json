@@ -66,6 +66,12 @@
 		"typescript": "^7.0.0"
 	},
 	"peerDependencies": {
-		"oxlint": ">=1.46.0"
+		"oxlint": ">=1.46.0",
+		"oxlint-tsgolint": ">=7.0.2001"
+	},
+	"peerDependenciesMeta": {
+		"oxlint-tsgolint": {
+			"optional": true
+		}
 	}
 }
