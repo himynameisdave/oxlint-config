@@ -52,13 +52,15 @@
 		"build": "tsc",
 		"lint": "tsc && oxlint -c oxlint.config.ts --deny-warnings",
 		"check-coverage": "tsc && bun scripts/check-coverage.ts",
+		"test:consumer": "tsc && bun scripts/consumer-smoke.ts",
 		"prepublishOnly": "npm run build",
 		"format": "oxfmt --write",
 		"format:check": "oxfmt --check",
-		"test": "bun run lint && bun run format:check && bun run check-coverage",
+		"test": "bun run lint && bun run format:check && bun run check-coverage && bun run test:consumer",
 		"release": "np"
 	},
 	"devDependencies": {
+		"@types/bun": "^1.3.14",
 		"np": "^12.0.0",
 		"oxfmt": "^0.60.0",
 		"oxlint": "^1.75.0",

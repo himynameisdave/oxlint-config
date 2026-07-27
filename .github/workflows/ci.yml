@@ -26,3 +26,6 @@ jobs:
 
       - name: Rule coverage (every registered oxlint rule has a decision)
         run: bun run check-coverage
+
+      - name: Consumer smoke test (packs, installs, lints as a consumer would)
+        run: bun run test:consumer
