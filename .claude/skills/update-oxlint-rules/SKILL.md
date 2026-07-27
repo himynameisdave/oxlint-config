@@ -43,9 +43,10 @@ Renamed upstream → move the decision + comment to the new name. Deleted → re
 ```bash
 bun run check-coverage   # must print OK
 bun run lint             # self-lint must pass
+bun run test:consumer    # packs the tarball, installs it in a scratch project, lints
 ```
 
-Then smoke-test as a consumer: `npm pack`, install the tarball in a scratch project with a file violating one new rule, confirm it fires.
+`test:consumer` (`scripts/consumer-smoke.ts`) proves the `exports` map, the svelte overrides, the base test-file override, and the type-aware handoff all still work from a real install. It needs network access. If a newly-decided rule deserves permanent coverage, add a fixture to `FIXTURES` in that script.
 
 ## 5. Ship
 
