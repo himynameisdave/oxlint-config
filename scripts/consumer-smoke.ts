@@ -64,6 +64,24 @@ const FIXTURES = [
 			'\twork();\n' +
 			'}\n'
 	},
+	// Proves the type-aware return-await correctness case fires from a consumer
+	// install: `return` (not `return await`) inside try/catch skips the catch on
+	// rejection, so in-try-catch mode must flag it.
+	{
+		path: 'src/return-await.ts',
+		content:
+			'declare function fetchData(): Promise<string>;\n' +
+			'\n' +
+			'async function load(): Promise<string> {\n' +
+			'\ttry {\n' +
+			'\t\treturn fetchData();\n' +
+			'\t} catch {\n' +
+			"\t\treturn 'fallback';\n" +
+			'\t}\n' +
+			'}\n' +
+			'\n' +
+			'export { load };\n'
+	},
 	// Proves the svelte override applies: a never-reassigned `let` (prefer-const would
 	// fire without the override) plus a `var` the override does not touch.
 	{
@@ -219,13 +237,19 @@ if (raw === '') {
 const diagnostics =
 	raw === '' ? [] : (JSON.parse(raw) as { diagnostics: Diagnostic[] }).diagnostics;
 
-// --- 5. Assert the four consumer-visible contracts ----------------------------
+// --- 5. Assert the six consumer-visible contracts -----------------------------
 expectRule(diagnostics, 'src/bad.ts', 'no-var', 'the exports map and base config resolve');
 expectRule(
 	diagnostics,
 	'src/floating.ts',
 	'no-floating-promises',
 	'the type-aware (tsgolint) pipeline runs from a consumer install'
+);
+expectRule(
+	diagnostics,
+	'src/return-await.ts',
+	'return-await',
+	'the return-await correctness fix (in-try-catch mode) fires from a consumer install'
 );
 expectSuppressed(
 	diagnostics,
