@@ -1,12 +1,16 @@
 /**
  * Verifies the configs are exhaustive against the INSTALLED oxlint version:
  *
- *   1. Extracts every registered `plugin/rule` from oxlint's type definitions.
+ *   1. Extracts every registered `plugin/rule` from oxlint's type definitions,
+ *      and asserts every plugin prefix has a stance — configured or excluded.
  *   2. Resolves each rule's category via `oxlint --print-config` (one run per category).
  *   3. Asserts every rule we defer to the nursery is still IN the nursery.
  *   4. Asserts: every registered rule for our enabled plugins appears in exactly
  *      one of base.ts / type-aware.ts / vitest.ts — no missing, stale, duplicates.
  *   5. Asserts every rule named in an `overrides` block still exists upstream.
+ *
+ * Every severity it walks along the way — top level or override — must be
+ * "error" or "off" (iron rule 2).
  *
  * Exits non-zero with a diff when oxlint added/removed/renamed/promoted rules,
  * which is the signal to run the update workflow (.claude/skills/update-oxlint-rules).
@@ -24,6 +28,17 @@ import typeAware from '../dist/type-aware.js';
 import vitest from '../dist/vitest.js';
 
 const PLUGINS = ['typescript', 'unicorn', 'oxc', 'import', 'promise', 'node', 'jsdoc', 'vitest'];
+// Plugins we deliberately don't configure — same philosophy as the rules: every
+// exclusion is explicit and says why. A prefix in neither list fails the gate,
+// so a whole new upstream plugin can't slip past iron rule 1 unnoticed.
+const EXCLUDED_PLUGINS: Record<string, string> = {
+	react: 'JSX — not a target stack',
+	'react-perf': 'JSX — not a target stack',
+	nextjs: 'React meta-framework — not a target stack',
+	'jsx-a11y': 'JSX accessibility — no JSX to check',
+	vue: 'Vue SFCs — Svelte is the component framework this config supports',
+	jest: 'test runner — vitest is the one this package supports (src/vitest.ts)'
+};
 // Rules that are off ONLY because oxlint still marks them nursery. Promotion
 // doesn't rename a rule, so the coverage diff below can't see it — this list
 // fails the gate instead, so a real decision gets made (then drop it from here).
@@ -38,6 +53,7 @@ const NURSERY_WATCH = [
 	'import/named',
 	'promise/no-return-in-finally'
 ];
+const ANCHOR = 'interface DummyRuleMap {';
 const CATEGORIES = [
 	'correctness',
 	'suspicious',
@@ -48,9 +64,28 @@ const CATEGORIES = [
 	'nursery'
 ];
 
+// Iron rule 2: "error" or "off", never "warn". Applied wherever a rule is
+// declared — a stray "warn" inside an overrides block ships just as silently.
+function checkSeverity(name: string, file: string, entry: unknown): void {
+	const severity: unknown = Array.isArray(entry) ? entry[0] : entry;
+	if (severity !== 'error' && severity !== 'off') {
+		console.error(
+			`BAD SEVERITY: ${name} in ${file} is "${String(severity)}" — policy is "error" or "off" only`
+		);
+		process.exitCode = 1;
+	}
+}
+
 // --- 1. Registered rules from oxlint's own types -----------------------------
 const dts = await Bun.file(`${import.meta.dir}/../node_modules/oxlint/dist/index.d.ts`).text();
-const mapStart = dts.indexOf('interface DummyRuleMap {');
+const mapStart = dts.indexOf(ANCHOR);
+// Without this, a renamed interface makes indexOf return -1, the slice grabs the
+// wrong span, and the gate fails as a giant STALE list instead of saying why.
+if (mapStart === -1) {
+	throw new Error(
+		`oxlint d.ts anchor "${ANCHOR}" not found — upstream types changed shape; update check-coverage.ts`
+	);
+}
 const mapBody = dts.slice(mapStart, dts.indexOf('\n}', mapStart));
 const prefixed = [...mapBody.matchAll(/"(?<name>[a-z0-9-]+\/[a-z0-9-]+)"\?/gu)].map(
 	(match) => match[1] ?? ''
@@ -58,6 +93,18 @@ const prefixed = [...mapBody.matchAll(/"(?<name>[a-z0-9-]+\/[a-z0-9-]+)"\?/gu)].
 const bare = [...mapBody.matchAll(/\n {2}"?(?<name>[a-zA-Z0-9/-]+)"?\?:/gu)]
 	.map((match) => match[1] ?? '')
 	.filter((key) => !key.includes('/'));
+
+// Plugin stance, taken from the UNFILTERED list — eslint core rules are bare in
+// the d.ts, so they're absent here by construction and need no stance entry.
+for (const prefix of new Set(prefixed.map((rule) => rule.split('/')[0] ?? ''))) {
+	if (!PLUGINS.includes(prefix) && !Object.hasOwn(EXCLUDED_PLUGINS, prefix)) {
+		console.error(
+			`NEW PLUGIN (no stance): ${prefix} — add it to PLUGINS and decide its rules, or to EXCLUDED_PLUGINS with a reason`
+		);
+		process.exitCode = 1;
+	}
+}
+
 const registered = new Set<string>([
 	...prefixed.filter((rule) => PLUGINS.includes(rule.split('/')[0] ?? '')),
 	...bare.map((rule) => `eslint/${rule}`)
@@ -122,6 +169,7 @@ for (const [file, config] of Object.entries({
 })) {
 	for (const [name, entry] of Object.entries(config.rules)) {
 		const severity = Array.isArray(entry) ? entry[0] : entry;
+		checkSeverity(name, file, entry);
 		const firstFile = configured.get(name);
 		// A later config re-declaring a rule as "off" is a deliberate handoff
 		// (type-aware supersedes a base syntax rule); two ACTIVE entries are a bug.
@@ -175,9 +223,10 @@ for (const [file, config] of Object.entries<ConfigWithOverrides>({
 	'vitest.ts': vitest
 })) {
 	for (const override of config.overrides ?? []) {
-		for (const rawName of Object.keys(override.rules ?? {})) {
+		for (const [rawName, entry] of Object.entries(override.rules ?? {})) {
 			overrideEntries += 1;
 			const name = rawName.includes('/') ? rawName : `eslint/${rawName}`;
+			checkSeverity(name, file, entry);
 			if (!registered.has(name)) {
 				console.error(`STALE (override): ${name} in ${file}`);
 				process.exitCode = 1;

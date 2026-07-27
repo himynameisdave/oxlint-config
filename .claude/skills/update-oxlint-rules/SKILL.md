@@ -19,8 +19,10 @@ bun run check-coverage
 - `MISSING` — new upstream rules with no decision. → step 2.
 - `STALE` — rules we configure at top level that no longer exist. → step 3.
 - `STALE (override)` — same, but the dead name is inside an `overrides` block (base's test-file override, or `src/svelte.ts`). Fix it in place: rename to the new rule, or delete the entry if the rule is gone. No top-level decision is needed — overrides only adjust decisions already made.
-- `DUPLICATE` — a rule active in both files.
+- `DUPLICATE` — a rule active in both files. Keep exactly one active; the other becomes an `"off"` handoff with a comment.
 - `PROMOTED` — a rule we turned off _purely because_ it was nursery has graduated to a real category. The name didn't change, so nothing else catches this. Make a real severity decision per the step-2 policy, rewrite its comment (it currently says "revisit when stabilized"), move it out of the nursery banner into its new category's section, and delete it from `NURSERY_WATCH` in `scripts/check-coverage.ts`.
+- `NEW PLUGIN (no stance)` — oxlint shipped a whole new plugin. Decide it at the plugin level: add the prefix to `PLUGINS` in `scripts/check-coverage.ts` and decide every one of its rules (they'll show up as `MISSING` on the next run), or add it to `EXCLUDED_PLUGINS` with a one-line reason. Same bar as a rule comment — say _why_, not what.
+- `BAD SEVERITY` — a rule is set to something other than `"error"` or `"off"` (iron rule 2). Pick one of the two; there is no `"warn"` in this package. Overrides are checked too.
 
 If it prints `OK`, only the dep bump needs committing.
 
