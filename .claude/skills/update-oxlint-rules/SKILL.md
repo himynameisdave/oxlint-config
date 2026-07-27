@@ -50,5 +50,6 @@ Then smoke-test as a consumer: `npm pack`, install the tarball in a scratch proj
 ## 5. Ship
 
 - README: update the "~540" rule count if it moved meaningfully.
+- Bump `peerDependencies.oxlint` to the version you just certified against (floor = the installed version `check-coverage` passed on). Update the README's floor line to match.
 - Version: new rules or dep-range bump = **minor**; any existing rule flipped error↔off = **major** (breaks consumer CI).
 - Commit style: emoji + short subject, why in body (e.g. `⬆️ oxlint 1.80: decide 12 new rules`). List notable new errors in the body.

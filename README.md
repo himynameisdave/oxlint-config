@@ -29,7 +29,7 @@ pnpm add -D oxlint @himynameisdave/oxlint-config
 yarn add -D oxlint @himynameisdave/oxlint-config
 ```
 
-Requires `oxlint >= 1.46.0` (config `extends` support). Type-aware linting requires TypeScript 7+.
+Requires `oxlint >=1.75.0 <2` — the rule inventory in this config is certified against that range by `bun run check-coverage`; older oxlint versions silently skip rules they don't recognize instead of erroring, so the floor tracks whichever version was last certified. Type-aware linting requires TypeScript 7+.
 
 ## Configurations
 
