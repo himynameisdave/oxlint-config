@@ -5,13 +5,13 @@
 
 version: 2
 updates:
-  - package-ecosystem: "bun"
-    directory: "/"
+  - package-ecosystem: 'bun'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     groups:
       oxc-toolchain:
         patterns:
-          - "oxlint"
-          - "oxlint-tsgolint"
-          - "oxfmt"
+          - 'oxlint'
+          - 'oxlint-tsgolint'
+          - 'oxfmt'
