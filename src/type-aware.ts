@@ -78,9 +78,9 @@ export default defineConfig({
 		// throw of non-Error values loses stack traces (type-aware big sibling of
 		// eslint/no-throw-literal, which is off below).
 		'typescript/only-throw-error': 'error',
-		// filter(...)[0] over the whole array; find stops early (type-aware twin of unicorn's).
+		// filter(...)[0] over the whole array; find stops early (supersedes unicorn's twin, off below).
 		'typescript/prefer-find': 'error',
-		// indexOf !== -1 is includes (type-aware coverage beyond unicorn's syntax check).
+		// indexOf !== -1 is includes, with types (supersedes unicorn's twin, off below).
 		'typescript/prefer-includes': 'error',
 		// || treats 0/"" as missing; ?? means "nullish only". A/B disagreed — stricter B wins.
 		'typescript/prefer-nullish-coalescing': 'error',
@@ -116,7 +116,8 @@ export default defineConfig({
 		'typescript/prefer-regexp-exec': 'error',
 		// Chainable methods returning `this` should say `this`, not the class name.
 		'typescript/prefer-return-this-type': 'error',
-		// startsWith over regex/indexOf checks, with types confirming string-ness.
+		// startsWith over regex/indexOf checks, with types confirming string-ness
+		// (supersedes unicorn's twin, off below).
 		'typescript/prefer-string-starts-ends-with': 'error',
 		// A function returning Promise should be async — the keyword is the documentation.
 		'typescript/promise-function-async': 'error',
@@ -174,6 +175,12 @@ export default defineConfig({
 		// Superseded by typescript/only-throw-error.
 		'eslint/no-throw-literal': 'off',
 		// Superseded by typescript/prefer-promise-reject-errors.
-		'eslint/prefer-promise-reject-errors': 'off'
+		'eslint/prefer-promise-reject-errors': 'off',
+		// Superseded by typescript/prefer-find.
+		'unicorn/prefer-array-find': 'off',
+		// Superseded by typescript/prefer-includes.
+		'unicorn/prefer-includes': 'off',
+		// Superseded by typescript/prefer-string-starts-ends-with.
+		'unicorn/prefer-string-starts-ends-with': 'off'
 	}
 });
