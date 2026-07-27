@@ -81,6 +81,11 @@ const FIXTURES = [
 	{
 		path: 'src/util.test.ts',
 		content: "console.log('hi');\nvar probe = 1;\nexport default probe;\n"
+	},
+	// Proves the vitest add-on reaches a consumer: a committed .only must fail CI.
+	{
+		path: 'src/focused.test.ts',
+		content: "it.only('runs alone', () => {\n\texpect(1).toBe(1);\n});\n"
 	}
 ];
 
@@ -90,7 +95,7 @@ import config from '@himynameisdave/oxlint-config';
 export default defineConfig({ extends: [config] });
 `;
 
-const RESOLVE_CHECK = `const subpaths = ['', '/base', '/svelte', '/type-aware'];
+const RESOLVE_CHECK = `const subpaths = ['', '/base', '/svelte', '/type-aware', '/vitest'];
 
 for (const sub of subpaths) {
 	const specifier = \`@himynameisdave/oxlint-config\${sub}\`;
@@ -224,6 +229,12 @@ expectSuppressed(
 	'no-console',
 	"the base config's test-file override applies"
 );
+expectRule(
+	diagnostics,
+	'src/focused.test.ts',
+	'no-focused-tests',
+	'the vitest add-on rules fire from a consumer install'
+);
 
 // Anything outside src/ means the scratch setup rotted (see the ignorePatterns note).
 const strays = [
@@ -258,6 +269,6 @@ if (failures.length > 0) {
 } else {
 	await rm(workDir, { recursive: true, force: true });
 	console.log(
-		`OK: packed tarball installs, all 4 subpaths resolve, ${FIXTURES.length} fixtures behave.`
+		`OK: packed tarball installs, all 5 subpaths resolve, ${FIXTURES.length} fixtures behave.`
 	);
 }

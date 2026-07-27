@@ -15,6 +15,7 @@ Shareable oxlint config package. The product IS the rule decisions — treat `sr
 
 - `src/base.ts` — all non-type-aware rules (framework-agnostic) + test-file override + ignorePatterns
 - `src/svelte.ts` — `.svelte`/`.svelte.ts` overrides only
+- `src/vitest.ts` — vitest plugin rules (opt-in add-on; inert on non-test syntax)
 - `src/type-aware.ts` — tsgolint rules + `options.typeAware` + handoff-offs for base rules the TS versions supersede
 - `src/index.ts` — re-exports + kitchen-sink default
 - `scripts/check-coverage.ts` — exhaustiveness gate (see iron rule 1)
