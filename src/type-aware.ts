@@ -131,9 +131,10 @@ export default defineConfig({
 		'typescript/restrict-plus-operands': 'error',
 		// `${obj}` in templates — same [object Object] family as no-base-to-string.
 		'typescript/restrict-template-expressions': 'error',
-		// return-vs-return-await has real try/catch stack differences, but enforcing a
-		// direction flip-flops with runtime optimizations (off per smallreads).
-		'typescript/return-await': 'off',
+		// `return promise` inside try/catch returns before it can reject, so the catch
+		// never runs: that's a real bug, not a style choice. in-try-catch mode targets
+		// only that case (verified: it does not fire on a plain return outside try/catch).
+		'typescript/return-await': ['error', 'in-try-catch'],
 		// if (str) conflating "" with absence is idiomatic JS; requiring !== "" everywhere
 		// fights the language (off per smallreads).
 		'typescript/strict-boolean-expressions': 'off',
@@ -162,7 +163,13 @@ export default defineConfig({
 		'typescript/no-unsafe-member-access': 'off',
 		// Returning an any value.
 		'typescript/no-unsafe-return': 'off',
-		// Asserting from any (`x as T`); tests exempt it anyway in base's override.
+
+		// Bans any `as` cast that isn't provably safe: fires even without `any`
+		// involved (verified: `wide as Narrow` errors with no `any` in sight), so
+		// it isn't really part of the any-quarantine family above, despite sitting
+		// beside it. Off because boundary casts (JSON.parse(...) as T, DOM node casts)
+		// are unavoidable in app code; tests exempt it anyway in base's override.
+		// Revisit if #6's dogfood data ever shows a low hit count on real code.
 		'typescript/no-unsafe-type-assertion': 'off',
 
 		/* ------------------------------------------------------------------ *
