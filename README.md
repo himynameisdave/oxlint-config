@@ -97,22 +97,7 @@ Version bumps describe what a release does to _your_ CI:
 
 Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule flipped from `off` to `error` break your build in exactly the same way, so pretending one is riskier than the other would just inflate the major number without telling you anything. New errors are the point of the package.
 
-### Opting out of surprise errors
-
-`^1.0.0` (npm's default when you `install`) accepts minor bumps, which means it accepts new errors. That's the intended deal: you get new rules as they land, at the cost of a red CI on a day you weren't planning to fix lint. If you'd rather choose your own moment, narrow the range:
-
-| In `package.json` | Picks up      | New errors can appear |
-| ----------------- | ------------- | --------------------- |
-| `"^1.0.0"`        | minor + patch | yes, on any update    |
-| `"~1.0.0"`        | patch only    | no                    |
-| `"1.0.0"`         | nothing       | no                    |
-
-`~1.0.0` is the sweet spot for most teams: you still get doc and tooling fixes automatically, and rule changes become a deliberate `npm install @himynameisdave/oxlint-config@latest` that you run when you have time to fix what it finds. Read the release notes, take the errors in one pass, move on.
-
-Two caveats, so the pin actually holds:
-
-- **A lockfile is what enforces this in CI.** A range alone doesn't pin anything until `package-lock.json` / `bun.lock` is committed and CI installs with `npm ci` (or `bun install --frozen-lockfile`) rather than a plain install.
-- **Pinning this package doesn't freeze oxlint.** oxlint is a peer dependency you install yourself, so its range is your call too. Upgrading oxlint alone won't turn on rules we haven't decided (every category is `"off"` and every active rule is named), but a new oxlint can still improve detection inside a rule you already have on, and find more of what it was always looking for.
+`^` accepts new errors on update. Don't want that? Use `~` (patch only) with a committed lockfile, and upgrade deliberately.
 
 **Supported oxlint: `>=1.75.0 <2`.** The floor is the version this release's rule inventory was certified against, so it moves whenever new rules are decided. Older oxlint skips rules it doesn't know instead of erroring, which means a stale binary quietly under-lints. The `<2` ceiling is there because an oxlint 2.0 needs a release here anyway.
 
