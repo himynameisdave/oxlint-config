@@ -54,4 +54,4 @@ Two gotchas when writing Bun scripts here:
 - Commits: emoji + short subject, why-explanation in the body (`✨ Add base config`).
 - Tabs for indentation; `.js` extensions on relative imports (NodeNext).
 - When oxlint ships new rules upstream, use the `update-oxlint-rules` skill (`.claude/skills/update-oxlint-rules/`).
-- Version bumps: new rules added = minor; a rule flipped error↔off = major (it can break consumer CI).
+- Version bumps: any rule churn (new rules, a rule flipped error↔off, options tightened) = minor. Major is reserved for structural changes: an oxlint major, a new plugin, an entry point renamed/removed.

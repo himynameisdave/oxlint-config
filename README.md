@@ -91,9 +91,11 @@ oxlint -c oxlint.config.ts --deny-warnings
 
 Version bumps describe what a release does to _your_ CI:
 
-- **major**: an existing rule flipped between `error` and `off`, or an option tightened. Your build may break. Read the release notes.
-- **minor**: new rules decided, usually after an oxlint release adds them. New errors can appear in code that passed before.
+- **major**: structural change to what this package _is_. An oxlint major bump, a new plugin enabled, an entry point renamed or removed.
+- **minor**: rule decisions. New rules decided (usually after an oxlint release adds them), an existing rule flipped between `error` and `off`, or options tightened. New errors can appear in code that passed before.
 - **patch**: docs, comments, tooling. No behavior change.
+
+Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule flipped from `off` to `error` break your build in exactly the same way, so pretending one is riskier than the other would just inflate the major number without telling you anything. New errors are the point of the package.
 
 So `^` means you accept new errors on update, in exchange for getting new rules as they land. Don't want that? Pin an exact version (or use `~`) and bump deliberately.
 

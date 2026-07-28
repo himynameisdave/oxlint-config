@@ -30,8 +30,8 @@ np then walks through, in order:
 2. **Tests.** Runs `npm test`, which here means all three CI gates: `lint` (tsc build + self-lint with our own config, type-aware on), `format:check` (oxfmt), and `check-coverage` (every registered oxlint rule has an explicit decision). A red gate aborts the release.
 3. **Version prompt.** Pick the bump. House rules (see CLAUDE.md):
    - **patch**: comment fixes, README/docs, tooling that doesn't change shipped rules
-   - **minor**: new rules decided (e.g. after an oxlint upgrade via the `update-oxlint-rules` skill), new config entry points
-   - **major**: any existing rule flipped `error` ↔ `off`, or options tightened. Either can break a consumer's CI.
+   - **minor**: rule churn of any kind. New rules decided (e.g. after an oxlint upgrade via the `update-oxlint-rules` skill), an existing rule flipped `error` ↔ `off`, options tightened. All of these can add errors to a consumer's CI, and that's the deal `^` buys them.
+   - **major**: structural changes. An oxlint major bump, a newly enabled plugin, an entry point renamed or removed.
 
    The consumer-facing statement of this policy lives in README → Versioning & compatibility. Change one, change the other.
 
