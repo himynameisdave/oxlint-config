@@ -29,9 +29,8 @@ pnpm add -D oxlint @himynameisdave/oxlint-config
 yarn add -D oxlint @himynameisdave/oxlint-config
 ```
 
-- Requires `oxlint >=1.75.0 <2`
-  - floor tracks the version `check-coverage` last certified; older oxlint silently skips unknown rules instead of erroring.
-- Type-aware linting requires TypeScript 7+.
+- Requires `oxlint >=1.75.0 <2`. Why that range, and how it moves: [Versioning & compatibility](#versioning--compatibility).
+- Type-aware linting requires TypeScript 7+ and a `strict` tsconfig.
 
 ## Configurations
 
@@ -87,6 +86,24 @@ oxlint -c oxlint.config.ts --deny-warnings
 3. **Comments are mandatory.** Every rule (on _or_ off) has a one-line comment saying _why_. If a decision can't justify itself in one line, it's not a decision yet.
 4. **Strict by default, escape hatches documented.** The base config assumes you want to be told. Common overrides are listed below, not baked in.
 5. **No formatting rules.** Whitespace is [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html)'s job. Anything purely about layout is off.
+
+## Versioning & compatibility
+
+Version bumps describe what a release does to _your_ CI:
+
+- **major**: structural change to what this package _is_. An oxlint major bump, a new plugin enabled, an entry point renamed or removed.
+- **minor**: rule decisions. New rules decided (usually after an oxlint release adds them), an existing rule flipped between `error` and `off`, or options tightened. New errors can appear in code that passed before.
+- **patch**: docs, comments, tooling. No behavior change.
+
+Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule flipped from `off` to `error` break your build in exactly the same way, so pretending one is riskier than the other would just inflate the major number without telling you anything. New errors are the point of the package.
+
+`^` accepts new errors on update. Don't want that? Use `~` (patch only) with a committed lockfile, and upgrade deliberately.
+
+**Supported oxlint: `>=1.75.0 <2`.** The floor is the version this release's rule inventory was certified against, so it moves whenever new rules are decided. Older oxlint skips rules it doesn't know instead of erroring, which means a stale binary quietly under-lints. The `<2` ceiling is there because an oxlint 2.0 needs a release here anyway.
+
+**Type-aware assumes a strict tsconfig.** The `type-aware` config expects `"strict": true`, and does its best work with `"noUncheckedIndexedAccess"`. Without them, rules like `typescript/no-unnecessary-condition` both over- and under-report.
+
+**Plugins you add start off.** Every category is `"off"` by design, so adding `plugins: ['react']` to your own config enables zero react rules until you name each one. Surprising once, then greppable forever.
 
 ## Enabled plugins
 
