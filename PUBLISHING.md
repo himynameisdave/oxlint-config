@@ -26,8 +26,8 @@ bun run release
 
 np then walks through, in order:
 
-1. **Preflight.** Verifies clean working tree, current branch, and remote sync, then pulls latest.
-2. **Tests.** Runs `npm test`, which here means all three CI gates: `lint` (tsc build + self-lint with our own config, type-aware on), `format:check` (oxfmt), and `check-coverage` (every registered oxlint rule has an explicit decision). A red gate aborts the release.
+1. **Preflight.** Checks npm auth first (`npm whoami`), then clean working tree, current branch, and remote sync, then pulls latest. The auth check is not skippable: even `bun run release -- --preview` stops with "You must be logged in" if you aren't, so run `npm login` before a rehearsal.
+2. **Tests.** Runs `npm test`, which here means all four CI gates: `lint` (tsc build + self-lint with our own config, type-aware on), `format:check` (oxfmt), `check-coverage` (every registered oxlint rule has an explicit decision), and `test:consumer` (pack, install and lint from a scratch consumer project). A red gate aborts the release.
 3. **Version prompt.** Pick the bump. House rules (see CLAUDE.md):
    - **patch**: comment fixes, README/docs, tooling that doesn't change shipped rules
    - **minor**: rule churn of any kind. New rules decided (e.g. after an oxlint upgrade via the `update-oxlint-rules` skill), an existing rule flipped `error` ↔ `off`, options tightened. All of these can add errors to a consumer's CI, and that's the deal `^` buys them.
@@ -35,7 +35,7 @@ np then walks through, in order:
 
    The consumer-facing statement of this policy lives in README → Versioning & compatibility. Change one, change the other.
 
-4. **Publish.** `prepublishOnly` runs the build (`tsc` → `dist/`), then npm uploads the tarball (11 files: `dist/` + LICENSE + README + package.json; `src/` never ships). OTP prompt happens here.
+4. **Publish.** `prepublishOnly` runs the build (`tsc` → `dist/`), then npm uploads the tarball (13 files: two per entry point in `dist/` (`.js` + `.d.ts`, five entry points) plus LICENSE, README and package.json; `src/` never ships). OTP prompt happens here. Adding an entry point adds two files: check with `npm publish --dry-run` and update this count.
 5. **Tag + release.** np pushes the `vX.Y.Z` tag and opens a prefilled GitHub release draft in your browser. Paste highlights (notable new rules / flips) and publish it.
 
 ## Verify afterwards
