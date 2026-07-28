@@ -47,7 +47,8 @@
 		"./vitest": {
 			"types": "./dist/vitest.d.ts",
 			"default": "./dist/vitest.js"
-		}
+		},
+		"./package.json": "./package.json"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -79,5 +80,6 @@
 		"oxlint-tsgolint": {
 			"optional": true
 		}
-	}
+	},
+	"packageManager": "bun@1.3.13"
 }

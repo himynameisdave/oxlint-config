@@ -95,7 +95,9 @@ import config from '@himynameisdave/oxlint-config';
 export default defineConfig({ extends: [config] });
 `;
 
-const RESOLVE_CHECK = `const subpaths = ['', '/base', '/svelte', '/type-aware', '/vitest'];
+const RESOLVE_CHECK = `import { createRequire } from 'node:module';
+
+const subpaths = ['', '/base', '/svelte', '/type-aware', '/vitest'];
 
 for (const sub of subpaths) {
 	const specifier = \`@himynameisdave/oxlint-config\${sub}\`;
@@ -103,6 +105,14 @@ for (const sub of subpaths) {
 	if (typeof mod.default !== 'object' || mod.default === null) {
 		throw new Error(\`\${specifier} resolved but has no default export object\`);
 	}
+}
+
+// The ./package.json export: publint, Renovate and some bundlers read it, and an
+// exports map without it blocks the subpath outright. require() rather than import
+// so the check does not depend on import-attributes support.
+const pkg = createRequire(import.meta.url)('@himynameisdave/oxlint-config/package.json');
+if (typeof pkg.version !== 'string') {
+	throw new Error('package.json subpath resolved but has no version string');
 }
 `;
 
@@ -269,6 +279,7 @@ if (failures.length > 0) {
 } else {
 	await rm(workDir, { recursive: true, force: true });
 	console.log(
-		`OK: packed tarball installs, all 5 subpaths resolve, ${FIXTURES.length} fixtures behave.`
+		`OK: packed tarball installs, all 5 subpaths + ./package.json resolve,` +
+			` ${FIXTURES.length} fixtures behave.`
 	);
 }
