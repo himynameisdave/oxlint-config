@@ -281,6 +281,8 @@ export default defineConfig({
 		'eslint/grouped-accessor-pairs': 'error',
 		// for-in walks the prototype chain; guard or use Object.keys.
 		'eslint/guard-for-in': 'error',
+		// No-op without a project-specific list; consumers configure it if wanted.
+		'eslint/id-denylist': 'off',
 		// Short names are fine where scope is short (i, x, db).
 		'eslint/id-length': 'off',
 		// No-op without a project-specific pattern; consumers configure it if wanted.
@@ -875,6 +877,8 @@ export default defineConfig({
 		'oxc/bad-char-at-comparison': 'error',
 		// a === b === c compares a boolean to c.
 		'oxc/bad-comparison-sequence': 'error',
+		// matchAll with a non-global regex throws at runtime (twin of bad-replace-all-arg).
+		'oxc/bad-match-all-arg': 'error',
 		// Math.min(Math.max(x, hi), lo) with swapped bounds clamps to a constant.
 		'oxc/bad-min-max-func': 'error',
 		// obj === {} is always false — reference comparison against a fresh literal.
@@ -1089,6 +1093,8 @@ export default defineConfig({
 		'node/callback-return': 'off',
 		// CJS-era rule; import/no-commonjs already bans require wholesale.
 		'node/global-require': 'off',
+		// Which flavor of CJS export to use is moot — no-commonjs bans them all.
+		'node/exports-style': 'off',
 		// Assigning to `exports` alone silently breaks — module.exports is the binding.
 		'node/no-exports-assign': 'error',
 		// CJS-era rule about require grouping; moot under no-commonjs.
