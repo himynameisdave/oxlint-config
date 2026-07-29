@@ -162,12 +162,39 @@ Things real projects legitimately relax. Add these to _your_ config's `rules`/`o
 rules: {
 	// ORM/bundler underscore conventions (Prisma _count, Vite __APP_VERSION__):
 	"eslint/no-underscore-dangle": ["error", { allow: ["__APP_VERSION__", "_count"] }],
-	// Framework types that can't be deeply readonly (SvelteKit RequestEvent, Playwright Page):
-	"typescript/prefer-readonly-parameter-types": ["error", { ignoreInferredTypes: true, allow: ["RequestEvent", "Page"] }],
+	// Framework types that can't be deeply readonly (SvelteKit RequestEvent, Playwright
+	// Page/APIRequestContext). Overriding a rule replaces its options wholesale — it does
+	// NOT merge — so restate the base config's platform exemptions alongside your additions:
+	"typescript/prefer-readonly-parameter-types": ["error", {
+		ignoreInferredTypes: true,
+		allow: [
+			{ from: "lib", name: "Date" },
+			{ from: "lib", name: "URL" },
+			{ from: "lib", name: "URLSearchParams" },
+			{ from: "lib", name: "FormData" },
+			{ from: "lib", name: "Request" },
+			{ from: "lib", name: "Response" },
+			{ from: "lib", name: "Headers" },
+			{ from: "lib", name: "RegExp" },
+			"RequestEvent", "Page", "APIRequestContext",
+		],
+	}],
 	// Codebases that talk to sequential APIs:
 	"eslint/no-await-in-loop": "off",
 },
+overrides: [
+	// CLI scripts and DB seeds print to stdout and set exit codes by design:
+	{
+		files: ["scripts/**", "prisma/seed.ts"],
+		rules: {
+			"eslint/no-console": "off",
+			"unicorn/no-process-exit": "off",
+		},
+	},
+],
 ```
+
+Vendored component code (e.g. shadcn-svelte's `src/lib/components/ui`) predates your lint config. Run `oxlint --fix` over it once (`unicorn/prefer-export-from` and `import/consistent-type-specifier-style` are both auto-fixable), or add the directory to `ignorePatterns` if you'd rather not touch scaffolded files.
 
 Generated code and framework configs go in `ignorePatterns` (the base config only ignores build artifacts: `node_modules`, `dist`, `build`, `.svelte-kit`).
 

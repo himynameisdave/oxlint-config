@@ -26,7 +26,10 @@ export default defineConfig({
 				// Rune destructuring (`let { data } = $props()`) trips the same way.
 				'eslint/prefer-destructuring': 'off',
 				// Component modules commonly hold a component + tiny helper classes.
-				'eslint/max-classes-per-file': 'off'
+				'eslint/max-classes-per-file': 'off',
+				// import * as Dialog is the compound-component idiom (shadcn-svelte,
+				// bits-ui): <Dialog.Root><Dialog.Trigger/> needs the namespace.
+				'import/no-namespace': 'off'
 			}
 		}
 	]

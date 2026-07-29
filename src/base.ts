@@ -1167,6 +1167,15 @@ export default defineConfig({
 	},
 	overrides: [
 		{
+			// Ambient declaration files augment existing scopes (SvelteKit's app.d.ts
+			// App namespace, module augmentation) — declaration merging only works
+			// with interface, so forcing type there breaks the file's whole purpose.
+			files: ['**/*.d.ts'],
+			rules: {
+				'typescript/consistent-type-definitions': 'off'
+			}
+		},
+		{
 			// Tests trade some rigor for expressiveness: console output for debugging,
 			// any/! for constructing intentionally-invalid fixtures, multiple tiny
 			// classes for scenario setup.
