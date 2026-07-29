@@ -505,9 +505,11 @@ export default defineConfig({
 		'typescript/consistent-type-assertions': 'error',
 		// type over interface: no declaration merging surprises, works for unions too.
 		'typescript/consistent-type-definitions': ['error', 'type'],
-		// Inline `import { type X }` keeps one import per module; pairs with
-		// import/consistent-type-specifier-style below.
-		'typescript/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+		// Separate `import type { X }` statements so type erasure fully drops them at
+		// runtime; pairs with import/consistent-type-specifier-style below. (Inline
+		// fixStyle fights typescript/no-import-type-side-effects on all-type imports —
+		// see https://github.com/himynameisdave/oxlint-config/issues/33.)
+		'typescript/consistent-type-imports': ['error', { fixStyle: 'separate-type-imports' }],
 		// Property signatures (fn: () => void) get strict variance checking; methods don't.
 		'typescript/method-signature-style': 'error',
 		// An empty interface is {} — either meaningless or a wrong extends.
@@ -976,8 +978,10 @@ export default defineConfig({
 		/* ================================================================== *
 		 * import — style
 		 * ================================================================== */
-		// import { type X, y } inline — one import line per module, types marked in place.
-		'import/consistent-type-specifier-style': ['error', 'prefer-inline'],
+		// Separate `import type { X }` statement over inline `type` specifiers — agrees
+		// with typescript/no-import-type-side-effects so all-type imports fully erase and
+		// --fix converges (see issue #33).
+		'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
 		// Export placement is layout preference, not correctness (off per cacographer).
 		'import/exports-last': 'off',
 		// Imports scattered below code hide the dependency list.
