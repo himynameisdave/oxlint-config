@@ -65,7 +65,10 @@ export default defineConfig({
 		// the test has already passed.
 		'vitest/valid-expect-in-promise': 'error',
 		// Empty or dynamic-garbage titles break -t filtering and failure reports.
-		'vitest/valid-title': 'error',
+		// allowArguments: true lets a title be the imported function reference
+		// itself, which is what prefer-describe-function-title (below) demands —
+		// without it the two rules deadlock (oxc-project/oxc#18591).
+		'vitest/valid-title': ['error', { allowArguments: true }],
 		// .todo is the sanctioned marker for planned tests; banning it would push
 		// people back to .skip, which no-disabled-tests rightly forbids.
 		'vitest/warn-todo': 'off',
