@@ -505,8 +505,9 @@ export default defineConfig({
 		'typescript/consistent-type-assertions': 'error',
 		// type over interface: no declaration merging surprises, works for unions too.
 		'typescript/consistent-type-definitions': ['error', 'type'],
-		// Inline `import { type X }` keeps one import per module; pairs with
-		// import/consistent-type-specifier-style below.
+		// Inline `import { x, type Y }` keeps mixed value+type imports on one line; the
+		// all-type case is handled by import/consistent-type-specifier-style below, which
+		// sends it top-level so erasure drops it (issue #33).
 		'typescript/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
 		// Property signatures (fn: () => void) get strict variance checking; methods don't.
 		'typescript/method-signature-style': 'error',
@@ -976,8 +977,10 @@ export default defineConfig({
 		/* ================================================================== *
 		 * import — style
 		 * ================================================================== */
-		// import { type X, y } inline — one import line per module, types marked in place.
-		'import/consistent-type-specifier-style': ['error', 'prefer-inline'],
+		// Top-level `import type { X }` only when every specifier is a type — that shape
+		// fully erases, so this agrees with typescript/no-import-type-side-effects and
+		// --fix converges; mixed imports keep inline `type` on one line (see issue #33).
+		'import/consistent-type-specifier-style': ['error', 'prefer-top-level-if-only-type-imports'],
 		// Export placement is layout preference, not correctness (off per cacographer).
 		'import/exports-last': 'off',
 		// Imports scattered below code hide the dependency list.
