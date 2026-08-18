@@ -5,6 +5,13 @@
 
 version: 2
 updates:
+  # Action pins go stale silently — nothing in CI fails when they fall behind,
+  # so they only get noticed by someone reading the YAML. Let dependabot do it.
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+
   - package-ecosystem: 'bun'
     directory: '/'
     schedule:
