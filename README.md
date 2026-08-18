@@ -29,7 +29,7 @@ pnpm add -D oxlint @himynameisdave/oxlint-config
 yarn add -D oxlint @himynameisdave/oxlint-config
 ```
 
-- Requires `oxlint >=1.76.0 <2`. Why that range, and how it moves: [Versioning & compatibility](#versioning--compatibility).
+- Requires `oxlint >=1.78.0 <2`. Why that range, and how it moves: [Versioning & compatibility](#versioning--compatibility).
 - Type-aware linting requires TypeScript 7+ and a `strict` tsconfig.
 
 ## Configurations
@@ -99,7 +99,7 @@ Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule f
 
 `^` accepts new errors on update. Don't want that? Use `~` (patch only) with a committed lockfile, and upgrade deliberately.
 
-**Supported oxlint: `>=1.76.0 <2`.** The floor is the version this release's rule inventory was certified against, so it moves whenever new rules are decided. Older oxlint skips rules it doesn't know instead of erroring, which means a stale binary quietly under-lints. The `<2` ceiling is there because an oxlint 2.0 needs a release here anyway.
+**Supported oxlint: `>=1.78.0 <2`.** The floor is the version this release's rule inventory was certified against, so it moves whenever new rules are decided. Older oxlint skips rules it doesn't know instead of erroring, which means a stale binary quietly under-lints. The `<2` ceiling is there because an oxlint 2.0 needs a release here anyway.
 
 **Type-aware assumes a strict tsconfig.** The `type-aware` config expects `"strict": true`, and does its best work with `"noUncheckedIndexedAccess"`. Without them, rules like `typescript/no-unnecessary-condition` both over- and under-report.
 

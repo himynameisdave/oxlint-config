@@ -333,6 +333,9 @@ export default defineConfig({
 		'eslint/no-useless-computed-key': 'error',
 		// {x: x} has a shorthand for a reason.
 		'eslint/object-shorthand': 'error',
+		// "never" (the default is the opposite): `let a, b = 1` reads as if both were
+		// initialized, and one declarator per statement keeps diffs one binding wide.
+		'eslint/one-var': ['error', 'never'],
 		// x = x + y has a += spelling.
 		'eslint/operator-assignment': 'error',
 		// Arrow callbacks keep lexical this; function callbacks invite this-bugs.
@@ -1132,6 +1135,9 @@ export default defineConfig({
 		'jsdoc/check-tag-names': 'error',
 		// @implements on a non-class is meaningless.
 		'jsdoc/implements-on-classes': 'error',
+		// A `/** */` documents nothing — the require-*-description bar applied to the
+		// whole block. Fixer on: oxfmt reflows comments but never deletes them.
+		'jsdoc/no-blank-blocks': ['error', { enableFixer: true }],
 		// Defaults documented in JSDoc drift from the code's actual defaults.
 		'jsdoc/no-defaults': 'error',
 		// Demanding @property blocks on every typedef is ceremony; completeness
