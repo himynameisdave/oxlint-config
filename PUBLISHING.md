@@ -20,11 +20,11 @@ Until this is configured, the workflow's publish step fails with an auth error; 
 
 ## One-time setup: the `RELEASE_TOKEN` secret
 
-`main` is protected (a PR is required, and `ci` is a strict required check). The workflow's built-in `GITHUB_TOKEN` has write access but not admin, so its push of the version commit gets rejected — and because publish runs first, that rejection lands *after* the package is already on npm. So the push uses a PAT belonging to a repo admin instead (`enforce_admins` is off, so admins push through).
+`main` is protected (a PR is required, and `ci` is a strict required check). The workflow's built-in `GITHUB_TOKEN` has write access but not admin, so its push of the version commit gets rejected — and because publish runs first, that rejection lands _after_ the package is already on npm. So the push uses a PAT belonging to a repo admin instead (`enforce_admins` is off, so admins push through).
 
 1. Create a [fine-grained PAT](https://github.com/settings/personal-access-tokens/new): resource owner `himynameisdave`, repository access limited to `oxlint-config`, and **Contents: read & write** (nothing else).
 2. Add it as the repository secret [`RELEASE_TOKEN`](https://github.com/himynameisdave/oxlint-config/settings/secrets/actions).
-3. Diary the expiry. An expired token fails the run *after* publish — see [If a run fails after the publish step](#if-a-run-fails-after-the-publish-step).
+3. Diary the expiry. An expired token fails the run _after_ publish — see [If a run fails after the publish step](#if-a-run-fails-after-the-publish-step).
 
 ## Releasing
 
@@ -46,7 +46,7 @@ The workflow then runs, in order:
 
 Publish happens before the push on purpose: a failed publish leaves nothing on the remote to clean up. The reverse — publish succeeds, a later step fails — is the case that needs a human; see [If a run fails after the publish step](#if-a-run-fails-after-the-publish-step).
 
-> Note: the version commit is pushed with the `RELEASE_TOKEN` PAT, not `GITHUB_TOKEN`, because `main` is protected and the Actions bot can't push through it. A PAT push *does* trigger workflows, so CI re-runs on the release commit. Harmless — the release job just ran the same gates — but it means a red CI run on `main` after a release is a real signal, not noise.
+> Note: the version commit is pushed with the `RELEASE_TOKEN` PAT, not `GITHUB_TOKEN`, because `main` is protected and the Actions bot can't push through it. A PAT push _does_ trigger workflows, so CI re-runs on the release commit. Harmless — the release job just ran the same gates — but it means a red CI run on `main` after a release is a real signal, not noise.
 
 ## Verify afterwards
 
@@ -75,7 +75,7 @@ Then create the GitHub release for the new tag by hand.
 
 ## If a run fails after the publish step
 
-npm publishes are permanent, so a failure *after* the publish step leaves npm ahead of git: the version is live, but `main` has no version commit and no tag, and the runner that built it is gone. The workflow prints a loud error when this happens.
+npm publishes are permanent, so a failure _after_ the publish step leaves npm ahead of git: the version is live, but `main` has no version commit and no tag, and the runner that built it is gone. The workflow prints a loud error when this happens.
 
 **Do not re-run the workflow.** It would bump the version a second time and leave a gap on npm.
 
