@@ -28,8 +28,8 @@ Shareable oxlint config package. The product IS the rule decisions — treat `sr
 - `bun run lint` — build + self-lint with our own config (type-aware on)
 - `bun run check-coverage` — build + verify every registered rule is decided
 - `bun run format` / `format:check` — oxfmt (tabs, single quotes, width 100)
-- `bun run test` — all three gates (what CI and np's preflight run)
-- `bun run release` — np: version, publish (scoped → publishConfig already public), tag, GitHub release. Full walkthrough: PUBLISHING.md
+- `bun run test` — all four gates (what CI and the release workflow run)
+- Releasing: trigger the **Release** GitHub Actions workflow (pick patch/minor/major) — it runs the gates, versions, tags, publishes via npm trusted publishing, and creates the GitHub release. Full walkthrough: PUBLISHING.md
 
 ## Bun, not Node
 

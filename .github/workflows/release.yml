@@ -1,0 +1,105 @@
+name: Release
+
+# Manually-triggered npm release: pick a bump size, and this workflow runs the
+# gates, versions, tags, publishes (npm trusted publishing / OIDC — no token
+# secret, no OTP), pushes, and creates the GitHub release. See PUBLISHING.md.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version bump (patch = docs/tooling only, minor = any rule churn, major = structural — see PUBLISHING.md)'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+# Never let two releases interleave; queue rather than cancel a publish in flight.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write # push the version commit + tag, create the GitHub release
+  id-token: write # mint the OIDC token npm trusted publishing exchanges for publish rights
+
+# GitHub's default is `bash -e`; pipefail is off, so a failing command on the left
+# of a pipe would pass silently. `shell: bash` turns it on.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse to release from a non-main ref
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Releases must run from main (got '${{ github.ref }}')" >&2
+          exit 1
+
+      # main is protected (PR required + strict `ci` check) and GITHUB_TOKEN has
+      # write, not admin, so its push would be rejected — after npm publish has
+      # already run. RELEASE_TOKEN is an admin-owned PAT, and enforce_admins is
+      # off, so it pushes through. checkout persists it for the later git push.
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      # npm does the publish. registry-url writes the .npmrc that points publish
+      # at the public registry.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm >= 11.5.1, above what Node 24.0.0 bundled.
+      # Upgrade explicitly rather than relying on which 24.x the runner resolves.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run all gates (lint, format, rule coverage, consumer smoke)
+        run: bun run test
+
+      # Capture the tag npm prints rather than re-deriving it later: as a bare
+      # assignment this trips `set -e` if it fails, where `$(...)` inside an
+      # argument would swallow the error and produce an empty tag name.
+      - name: Bump version, commit and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TAG="$(npm version "${{ inputs.version }}" -m '🔖 Release v%s')"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      # prepublishOnly builds dist/; provenance is attached automatically by
+      # trusted publishing. Publish before pushing so a failed publish leaves
+      # nothing on the remote to clean up.
+      - name: Publish to npm
+        id: publish
+        run: npm publish
+
+      # --atomic so the branch and the tag land together or not at all.
+      - name: Push version commit and tag
+        run: git push --atomic --follow-tags origin main
+
+      # --verify-tag makes gh refuse a missing tag rather than inventing one.
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$TAG" --verify-tag --generate-notes
+
+      # Publishing is irreversible, so a later failure leaves npm ahead of git.
+      # Re-running would bump a second time; say so where the operator will look.
+      - name: Explain a partial release
+        if: failure() && steps.publish.outcome == 'success'
+        run: |
+          echo "::error::$TAG is LIVE ON NPM but a later step failed. Do NOT re-run this workflow — it would bump the version again and leave a gap. Recover by hand: see 'If a run fails after the publish step' in PUBLISHING.md."
