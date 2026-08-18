@@ -1,6 +1,6 @@
 {
 	"name": "@himynameisdave/oxlint-config",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"description": "An opinionated oxlint config, by and for himynameisdave.",
 	"keywords": [
 		"config",
