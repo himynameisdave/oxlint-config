@@ -14,9 +14,17 @@ Configure it once on npmjs.com:
    - Repository: `oxlint-config`
    - Workflow filename: `release.yml`
    - Environment: leave blank
-3. Save. That's it — no repo secrets needed.
+3. Save.
 
 Until this is configured, the workflow's publish step fails with an auth error; everything before it (gates, version bump) is local to the runner, so a failed run leaves no trace to clean up.
+
+## One-time setup: the `RELEASE_TOKEN` secret
+
+`main` is protected (a PR is required, and `ci` is a strict required check). The workflow's built-in `GITHUB_TOKEN` has write access but not admin, so its push of the version commit gets rejected — and because publish runs first, that rejection lands *after* the package is already on npm. So the push uses a PAT belonging to a repo admin instead (`enforce_admins` is off, so admins push through).
+
+1. Create a [fine-grained PAT](https://github.com/settings/personal-access-tokens/new): resource owner `himynameisdave`, repository access limited to `oxlint-config`, and **Contents: read & write** (nothing else).
+2. Add it as the repository secret [`RELEASE_TOKEN`](https://github.com/himynameisdave/oxlint-config/settings/secrets/actions).
+3. Diary the expiry. An expired token fails the run *after* publish — see [If a run fails after the publish step](#if-a-run-fails-after-the-publish-step).
 
 ## Releasing
 
@@ -36,9 +44,9 @@ The workflow then runs, in order:
 4. **Publish.** `prepublishOnly` runs the build (`tsc` → `dist/`), then npm uploads the tarball with provenance (13 files: two per entry point in `dist/` (`.js` + `.d.ts`, five entry points) plus LICENSE, README and package.json; `src/` never ships). Adding an entry point adds two files: check with `npm publish --dry-run` and update this count.
 5. **Push + release.** The version commit and tag are pushed to `main`, and a GitHub release is created with auto-generated notes. Edit it afterwards to add highlights (notable new rules / flips) if warranted.
 
-Publish happens before the push on purpose: a failed publish leaves nothing on the remote to clean up.
+Publish happens before the push on purpose: a failed publish leaves nothing on the remote to clean up. The reverse — publish succeeds, a later step fails — is the case that needs a human; see [If a run fails after the publish step](#if-a-run-fails-after-the-publish-step).
 
-> Note: the version commit is pushed with the workflow's `GITHUB_TOKEN`, which doesn't trigger other workflows — so CI won't re-run on that commit. That's fine: the release job itself just ran the same gates.
+> Note: the version commit is pushed with the `RELEASE_TOKEN` PAT, not `GITHUB_TOKEN`, because `main` is protected and the Actions bot can't push through it. A PAT push *does* trigger workflows, so CI re-runs on the release commit. Harmless — the release job just ran the same gates — but it means a red CI run on `main` after a release is a real signal, not noise.
 
 ## Verify afterwards
 
@@ -64,6 +72,21 @@ git push --follow-tags
 ```
 
 Then create the GitHub release for the new tag by hand.
+
+## If a run fails after the publish step
+
+npm publishes are permanent, so a failure *after* the publish step leaves npm ahead of git: the version is live, but `main` has no version commit and no tag, and the runner that built it is gone. The workflow prints a loud error when this happens.
+
+**Do not re-run the workflow.** It would bump the version a second time and leave a gap on npm.
+
+Recover by hand, from a clean checkout of `main`:
+
+1. `npm version <the published version> --no-git-tag-version` — matches package.json to what shipped
+2. `git commit -am "🔖 Release v<version>"` then `git tag "v<version>"`
+3. `git push --atomic --follow-tags origin main`
+4. `gh release create "v<version>" --verify-tag --generate-notes`
+
+The most likely cause is the push itself being rejected by branch protection on `main` — fix that before releasing again, or the next run fails the same way.
 
 ## If a publish goes wrong
 
