@@ -193,17 +193,20 @@ const stale = [...configured.keys()]
 	.filter((rule) => !registered.has(rule))
 	.toSorted((a, b) => a.localeCompare(b));
 
+// The bun alias belongs to bunisms, including stale names no longer exported.
+const ruleSource = (rule: string): string => (rule.startsWith('bun/') ? 'bunisms' : 'oxlint');
+
 if (missing.length > 0) {
-	console.error('MISSING (registered upstream, not decided in any config):');
 	for (const rule of missing) {
-		console.error(`  ${rule}  [${categoryOf.get(rule) ?? 'uncategorized'}]`);
+		console.error(
+			`MISSING (registered in ${ruleSource(rule)}, not decided in any config): ${rule} [${categoryOf.get(rule) ?? 'uncategorized'}]`
+		);
 	}
 	process.exitCode = 1;
 }
 if (stale.length > 0) {
-	console.error('STALE (configured, but no longer registered upstream):');
 	for (const rule of stale) {
-		console.error(`  ${rule}`);
+		console.error(`STALE (configured, but no longer registered in ${ruleSource(rule)}): ${rule}`);
 	}
 	process.exitCode = 1;
 }
@@ -234,7 +237,9 @@ for (const [file, config] of Object.entries<ConfigWithOverrides>({
 			const name = rawName.includes('/') ? rawName : `eslint/${rawName}`;
 			checkSeverity(name, file, entry);
 			if (!registered.has(name)) {
-				console.error(`STALE (override): ${name} in ${file}`);
+				console.error(
+					`STALE (override, no longer registered in ${ruleSource(name)}): ${name} in ${file}`
+				);
 				process.exitCode = 1;
 			}
 		}

@@ -110,7 +110,7 @@ Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule f
 
 ## Bun support and upstream updates
 
-The `bun` preset includes `eslint-plugin-bunisms` **0.1.0** as an exactly pinned runtime dependency. For this preset, consumers install only this config and Oxlint; no separate bunisms, ESLint, or Bun runtime installation is needed to run the linter. The linted application code should target Bun >=1.4.0.
+The `bun` preset includes `eslint-plugin-bunisms` **0.1.0** as an exactly pinned runtime dependency. For this preset, consumers install only this config and Oxlint; no separate bunisms, ESLint, or Bun runtime installation is needed to run the linter. Bunisms declares ESLint as an optional peer for ESLint users; Oxlint provides the plugin runtime here, so this package does not install ESLint. The linted application code should target Bun >=1.4.0.
 
 ```ts
 import { defineConfig } from 'oxlint';

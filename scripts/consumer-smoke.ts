@@ -56,17 +56,17 @@ const PEERS = ['oxlint', 'oxlint-tsgolint'];
 
 // Fixtures live as strings, not committed files: committed ones would be linted by our
 // own self-lint (they violate rules by design) and rewritten by oxfmt.
-const BUN_RULES = ['prefer-bun-file', 'prefer-bun-write', 'prefer-bun-spawn'];
+// Keep this a bounded integration probe: one overridden rule plus one sentinel.
+// check-coverage owns the exhaustive upstream inventory, not the smoke fixtures.
 const BUN_FIXTURE = 'src/bun-apis.ts';
 const FIXTURES = [
 	// Each call is reported, never executed: the linter itself still runs on Node.
 	{
 		path: BUN_FIXTURE,
 		content:
-			"import { readFile, writeFile } from 'node:fs/promises';\n" +
+			"import { readFile } from 'node:fs/promises';\n" +
 			"import { spawn } from 'node:child_process';\n" +
 			"export const read = () => readFile('input.txt');\n" +
-			"export const write = () => writeFile('output.txt', 'hello');\n" +
 			"export const start = () => spawn('echo', ['hello']);\n"
 	},
 	// Proves the exports map + base config reach a plain source file at all.
@@ -155,8 +155,12 @@ for (const dependency of ['eslint-plugin-bunisms', 'eslint']) {
 	}
 	if (resolved) throw new Error(dependency + ' unexpectedly resolves from the consumer');
 }
+// ESLint is an optional peer of bunisms; Oxlint supplies the plugin runtime.
 const root = await import('@himynameisdave/oxlint-config');
 const { default: bun } = await import('@himynameisdave/oxlint-config/bun');
+if (Object.values(bun.rules).some((severity) => severity !== 'error')) {
+	throw new Error('every configured Bun rule must be an error');
+}
 if (root.bun !== bun || !root.default.extends.includes(bun)) {
 	throw new Error('named Bun export and default composition must use the Bun preset');
 }
@@ -317,14 +321,9 @@ if (strays.length > 0) {
 }
 
 // All Bun diagnostics in the composed default must have error severity.
-for (const rule of BUN_RULES) {
-	expectRule(diagnostics, BUN_FIXTURE, rule, 'the default includes Bun rules');
-}
-if (
-	diagnosticsIn(diagnostics, BUN_FIXTURE).some(
-		(entry) => BUN_RULES.some((rule) => entry.code.includes(rule)) && entry.severity !== 'error'
-	)
-) {
+expectRule(diagnostics, BUN_FIXTURE, 'prefer-bun-file', 'the default includes Bun rules');
+expectRule(diagnostics, BUN_FIXTURE, 'prefer-bun-spawn', 'the default includes Bun rules');
+if (diagnosticsIn(diagnostics, BUN_FIXTURE).some((entry) => entry.severity !== 'error')) {
 	record('Bun diagnostics must be errors in the default config');
 }
 
@@ -355,16 +354,15 @@ const checkBunConsumer = async (version: string): Promise<void> => {
 	const found = (JSON.parse(result.stdout.toString()) as { diagnostics: Diagnostic[] }).diagnostics;
 	if (
 		result.exitCode !== 1 ||
-		found.length !== BUN_RULES.length ||
+		found.length !== 2 ||
 		found.some((entry) => entry.severity !== 'error')
 	) {
 		record(
-			`standalone Bun preset must emit exactly three errors and fail without --deny-warnings (${version})`
+			`standalone Bun preset must emit exactly two probe errors and fail without --deny-warnings (${version})`
 		);
 	}
-	for (const rule of BUN_RULES) {
-		expectRule(found, BUN_FIXTURE, rule, `standalone Bun preset on oxlint ${version}`);
-	}
+	expectRule(found, BUN_FIXTURE, 'prefer-bun-file', `standalone Bun preset on oxlint ${version}`);
+	expectRule(found, BUN_FIXTURE, 'prefer-bun-spawn', `standalone Bun preset on oxlint ${version}`);
 	const overridden =
 		await Bun.$`./node_modules/.bin/oxlint -c bun-override.config.ts --format json ${BUN_FIXTURE}`
 			.cwd(projectDir)
@@ -378,17 +376,15 @@ const checkBunConsumer = async (version: string): Promise<void> => {
 		'prefer-bun-file',
 		`consumer rule override on ${version}`
 	);
-	for (const rule of BUN_RULES.slice(1)) {
-		expectRule(
-			remaining,
-			BUN_FIXTURE,
-			rule,
-			`other Bun rules survive a consumer override on ${version}`
-		);
-	}
+	expectRule(
+		remaining,
+		BUN_FIXTURE,
+		'prefer-bun-spawn',
+		`sentinel survives a consumer override on ${version}`
+	);
 	if (
 		overridden.exitCode !== 1 ||
-		remaining.length !== 2 ||
+		remaining.length !== 1 ||
 		remaining.some((entry) => entry.severity !== 'error')
 	) {
 		record(`consumer override failed on ${version}`);
