@@ -316,16 +316,16 @@ if (strays.length > 0) {
 	record(`lint escaped the fixtures and hit: ${strays.slice(0, 5).join(', ')}`);
 }
 
-// All Bun diagnostics in the composed default must retain warning severity.
+// All Bun diagnostics in the composed default must have error severity.
 for (const rule of BUN_RULES) {
 	expectRule(diagnostics, BUN_FIXTURE, rule, 'the default includes Bun rules');
 }
 if (
 	diagnosticsIn(diagnostics, BUN_FIXTURE).some(
-		(entry) => BUN_RULES.some((rule) => entry.code.includes(rule)) && entry.severity !== 'warning'
+		(entry) => BUN_RULES.some((rule) => entry.code.includes(rule)) && entry.severity !== 'error'
 	)
 ) {
-	record('Bun diagnostics must be warnings in the default config');
+	record('Bun diagnostics must be errors in the default config');
 }
 
 // Exercise the standalone preset and consumer overrides with both the current
@@ -354,24 +354,16 @@ const checkBunConsumer = async (version: string): Promise<void> => {
 			.quiet();
 	const found = (JSON.parse(result.stdout.toString()) as { diagnostics: Diagnostic[] }).diagnostics;
 	if (
-		result.exitCode !== 0 ||
+		result.exitCode !== 1 ||
 		found.length !== BUN_RULES.length ||
-		found.some((entry) => entry.severity !== 'warning')
+		found.some((entry) => entry.severity !== 'error')
 	) {
 		record(
-			`standalone Bun preset must emit exactly three warnings and exit successfully (${version})`
+			`standalone Bun preset must emit exactly three errors and fail without --deny-warnings (${version})`
 		);
 	}
 	for (const rule of BUN_RULES) {
 		expectRule(found, BUN_FIXTURE, rule, `standalone Bun preset on oxlint ${version}`);
-	}
-	const denied =
-		await Bun.$`./node_modules/.bin/oxlint -c bun.config.ts --deny-warnings ${BUN_FIXTURE}`
-			.cwd(projectDir)
-			.nothrow()
-			.quiet();
-	if (denied.exitCode !== 1) {
-		record(`--deny-warnings must fail for Bun warnings (${version})`);
 	}
 	const overridden =
 		await Bun.$`./node_modules/.bin/oxlint -c bun-override.config.ts --format json ${BUN_FIXTURE}`
@@ -394,7 +386,11 @@ const checkBunConsumer = async (version: string): Promise<void> => {
 			`other Bun rules survive a consumer override on ${version}`
 		);
 	}
-	if (overridden.exitCode !== 0) {
+	if (
+		overridden.exitCode !== 1 ||
+		remaining.length !== 2 ||
+		remaining.some((entry) => entry.severity !== 'error')
+	) {
 		record(`consumer override failed on ${version}`);
 	}
 };
@@ -431,6 +427,6 @@ if (failures.length > 0) {
 	await rm(workDir, { recursive: true, force: true });
 	console.log(
 		`OK: packed tarball installs, all 6 subpaths + ./package.json resolve,` +
-			` ${FIXTURES.length} fixtures behave; Bun warnings/overrides verified at the minimum and development oxlint versions.`
+			` ${FIXTURES.length} fixtures behave; Bun errors/overrides verified at the minimum and development oxlint versions.`
 	);
 }

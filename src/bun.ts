@@ -2,9 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'oxlint';
 
 /**
- * Bun-targeted code: every rule in the pinned bunisms version is a warning.
+ * Bun-targeted code: every rule in the pinned bunisms version is an error.
  * Resolve from this package so consumers need no separate plugin installation.
- * `--deny-warnings` makes these warnings fail CI too.
  */
 export default defineConfig({
 	jsPlugins: [
@@ -15,10 +14,10 @@ export default defineConfig({
 	],
 	rules: {
 		// Bun.file keeps file reads on Bun's native file API.
-		'bun/prefer-bun-file': 'warn',
+		'bun/prefer-bun-file': 'error',
 		// Bun.write provides the native write path for Bun-targeted applications.
-		'bun/prefer-bun-write': 'warn',
+		'bun/prefer-bun-write': 'error',
 		// Bun's subprocess APIs integrate directly with its runtime and streams.
-		'bun/prefer-bun-spawn': 'warn'
+		'bun/prefer-bun-spawn': 'error'
 	}
 });

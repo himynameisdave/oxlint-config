@@ -10,7 +10,7 @@
  *   5. Asserts every rule named in an `overrides` block still exists upstream.
  *
  * Every severity it walks along the way — top level or override — must be
- * "error" or "off", except bun.ts requires "warn" (iron rule 2).
+ * "error" or "off" (iron rule 2).
  *
  * Exits non-zero when upstream rules are missing or stale. For native oxlint
  * rules, run the update workflow (.claude/skills/update-oxlint-rules); for
@@ -67,16 +67,12 @@ const CATEGORIES = [
 	'nursery'
 ];
 
-// Iron rule 2: only the Bun preset may declare warnings. Check overrides too.
+// Iron rule 2: "error" or "off", never "warn". Check every preset and override.
 function checkSeverity(name: string, file: string, entry: unknown): void {
 	const severity: unknown = Array.isArray(entry) ? entry[0] : entry;
-	const valid =
-		file === 'bun.ts' && name.startsWith('bun/')
-			? severity === 'warn'
-			: severity === 'error' || severity === 'off';
-	if (!valid) {
+	if (severity !== 'error' && severity !== 'off') {
 		console.error(
-			`BAD SEVERITY: ${name} in ${file} is "${String(severity)}" — expected "warn" for bun.ts Bun rules, otherwise "error" or "off"`
+			`BAD SEVERITY: ${name} in ${file} is "${String(severity)}" — policy is "error" or "off" only`
 		);
 		process.exitCode = 1;
 	}

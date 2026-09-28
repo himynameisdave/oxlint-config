@@ -34,14 +34,14 @@ yarn add -D oxlint @himynameisdave/oxlint-config
 
 ## Configurations
 
-| Config       | Import                                     | What it is                                                                     |
-| ------------ | ------------------------------------------ | ------------------------------------------------------------------------------ |
-| `base`       | `@himynameisdave/oxlint-config/base`       | Core JS/TS rules. No framework assumptions. Start here.                        |
-| `bun`        | `@himynameisdave/oxlint-config/bun`        | All rules from the pinned bunisms plugin, as warnings. Bun-targeted code only. |
-| `svelte`     | `@himynameisdave/oxlint-config/svelte`     | Svelte 5 (runes) overrides for `.svelte`/`.svelte.ts` files.                   |
-| `type-aware` | `@himynameisdave/oxlint-config/type-aware` | Rules needing type info. Requires `oxlint-tsgolint` + `--type-aware`.          |
-| `vitest`     | `@himynameisdave/oxlint-config/vitest`     | Test-suite rules for Vitest projects (`.only` in CI, etc).                     |
-| _(default)_  | `@himynameisdave/oxlint-config`            | Kitchen sink for Bun projects: all of the above.                               |
+| Config       | Import                                     | What it is                                                                   |
+| ------------ | ------------------------------------------ | ---------------------------------------------------------------------------- |
+| `base`       | `@himynameisdave/oxlint-config/base`       | Core JS/TS rules. No framework assumptions. Start here.                      |
+| `bun`        | `@himynameisdave/oxlint-config/bun`        | All rules from the pinned bunisms plugin, as errors. Bun-targeted code only. |
+| `svelte`     | `@himynameisdave/oxlint-config/svelte`     | Svelte 5 (runes) overrides for `.svelte`/`.svelte.ts` files.                 |
+| `type-aware` | `@himynameisdave/oxlint-config/type-aware` | Rules needing type info. Requires `oxlint-tsgolint` + `--type-aware`.        |
+| `vitest`     | `@himynameisdave/oxlint-config/vitest`     | Test-suite rules for Vitest projects (`.only` in CI, etc).                   |
+| _(default)_  | `@himynameisdave/oxlint-config`            | Kitchen sink for Bun projects: all of the above.                             |
 
 The default assumes your code targets Bun. For Node or browser projects, compose the individual presets without `bun`.
 
@@ -84,7 +84,7 @@ oxlint -c oxlint.config.ts --deny-warnings
 
 ## Philosophy
 
-1. **Error or off, except Bun suggestions.** Native rules are enforced or off. The `bun` preset deliberately uses warnings for every rule while bunisms is under active development. `--deny-warnings` makes those warnings fail CI too.
+1. **Error, never warn.** A rule is either enforced or it's off. Warnings are noise that scrolls by unfixed forever, so run with `--deny-warnings` and nothing can.
 2. **Explicit over implicit.** Every category is set to `"off"`; every active rule is listed by name. What's enforced is greppable, and rule-change diffs read like changelogs.
 3. **Comments are mandatory.** Every rule (on _or_ off) has a one-line comment saying _why_. If a decision can't justify itself in one line, it's not a decision yet.
 4. **Strict by default, escape hatches documented.** The base config assumes you want to be told. Common overrides are listed below, not baked in.
@@ -95,7 +95,7 @@ oxlint -c oxlint.config.ts --deny-warnings
 Version bumps describe what a release does to _your_ CI:
 
 - **major**: structural change to what this package _is_. An oxlint major bump, a new plugin enabled in an existing preset, an entry point or public rule name renamed or removed, or an incompatible runtime requirement.
-- **minor**: rule decisions. New rules decided (usually after an oxlint release adds them), an existing rule's severity changed (including `warn`), options tightened, or a plugin update changes lint findings. New errors can appear in code that passed before.
+- **minor**: rule decisions. New rules decided (usually after an oxlint release adds them), an existing rule flipped between `error` and `off`, options tightened, or a plugin update changes lint findings. New errors can appear in code that passed before.
 - **patch**: docs, comments, tooling. No behavior change.
 
 Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule flipped from `off` to `error` break your build in exactly the same way, so pretending one is riskier than the other would just inflate the major number without telling you anything. New errors are the point of the package.
@@ -126,15 +126,15 @@ export default defineConfig({
 });
 ```
 
-All three rules are explicit warnings: `bun/prefer-bun-file`, `bun/prefer-bun-write`, and `bun/prefer-bun-spawn`. They suggest Bun APIs for Node file reads, writes, and subprocess calls; they do not automatically rewrite code. They can report on Node-targeted code too, so use the standalone preset only where Bun is the intended runtime. Oxlint's JS plugin support is alpha; the consumer smoke test checks these rules at the supported Oxlint minimum and the development version.
+All three rules are explicit errors: `bun/prefer-bun-file`, `bun/prefer-bun-write`, and `bun/prefer-bun-spawn`. They suggest Bun APIs for Node file reads, writes, and subprocess calls; they do not automatically rewrite code. They can report on Node-targeted code too, so use the standalone preset only where Bun is the intended runtime. Oxlint's JS plugin support is alpha; the consumer smoke test checks these rules at the supported Oxlint minimum and the development version.
 
 Plugin resolution uses `fileURLToPath(import.meta.resolve('eslint-plugin-bunisms'))` inside the installed config package. This works with nested dependencies and does not depend on hoisting or a consumer-installed copy.
 
 “All rules” means all rules in the **pinned, reviewed version**. We do not generate the shipped config from upstream presets or discover new rules at runtime. Dependabot proposes dependency updates; our coverage gate compares the plugin's exported rules with the explicit config and rejects missing/stale entries. Each update must review rule behavior and compatibility, update the decisions/comments, and pass consumer tests before release. A new upstream release alone changes nothing for consumers.
 
-New rules and detection changes ship here as **minor** releases under the policy above, even when new warnings fail CI with `--deny-warnings`. Public rule renames/removals and incompatible runtime requirements are **major** changes. Upstream version numbers prompt review rather than determine this package's release number. Consumers wanting deliberate rule upgrades should use `~` plus a committed lockfile.
+New rules and detection changes ship here as **minor** releases under the policy above, even when new errors fail CI. Public rule renames/removals and incompatible runtime requirements are **major** changes. Upstream version numbers prompt review rather than determine this package's release number. Consumers wanting deliberate rule upgrades should use `~` plus a committed lockfile.
 
-**Migration for the next major release (2.0.0):** the default now includes Bun. Existing Node/browser consumers should compose `base`, `svelte`, `vitest`, and/or `typeAware` without `bun`. Bun consumers can keep the default import; review the new warnings before upgrading CI.
+**Migration for the next major release (2.0.0):** the default now includes Bun. Existing Node/browser consumers should compose `base`, `svelte`, `vitest`, and/or `typeAware` without `bun`. Bun consumers can keep the default import; review the new errors before upgrading CI.
 
 ## Enabled plugins
 

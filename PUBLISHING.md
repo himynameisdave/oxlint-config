@@ -31,7 +31,7 @@ Until this is configured, the workflow's publish step fails with an auth error; 
 From GitHub (web or mobile app): **Actions → Release → Run workflow**, leave the branch on `main`, and pick the bump:
 
 - **patch**: comment fixes, README/docs, tooling that doesn't change shipped rules
-- **minor**: rule churn of any kind. New rules decided (e.g. after an oxlint upgrade via the `update-oxlint-rules` skill), severity changes (including `warn`), options tightened, or plugin updates that change findings. All of these can add errors to a consumer's CI, and that's the deal `^` buys them.
+- **minor**: rule churn of any kind. New rules decided (e.g. after an oxlint upgrade via the `update-oxlint-rules` skill), an existing rule flipped `error` ↔ `off`, options tightened, or plugin updates that change findings. All of these can add errors to a consumer's CI, and that's the deal `^` buys them.
 - **major**: structural changes. An oxlint major bump, a newly enabled plugin in an existing preset, a public rule or entry point renamed or removed, or incompatible runtime requirements.
 
 The consumer-facing statement of this policy lives in README → Versioning & compatibility. Change one, change the other.
