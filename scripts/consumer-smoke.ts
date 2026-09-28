@@ -40,8 +40,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-type Diagnostic = { readonly code: string; readonly filename: string };
-type Manifest = { readonly devDependencies: Readonly<Record<string, string>> };
+type Diagnostic = {
+	readonly code: string;
+	readonly filename: string;
+	readonly severity: string;
+};
+type Manifest = {
+	readonly devDependencies: Readonly<Record<string, string>>;
+	readonly peerDependencies: { readonly oxlint: string };
+};
 
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 // Installed alongside the tarball so the consumer install mirrors this repo's versions.
@@ -49,7 +56,19 @@ const PEERS = ['oxlint', 'oxlint-tsgolint'];
 
 // Fixtures live as strings, not committed files: committed ones would be linted by our
 // own self-lint (they violate rules by design) and rewritten by oxfmt.
+const BUN_RULES = ['prefer-bun-file', 'prefer-bun-write', 'prefer-bun-spawn'];
+const BUN_FIXTURE = 'src/bun-apis.ts';
 const FIXTURES = [
+	// Each call is reported, never executed: the linter itself still runs on Node.
+	{
+		path: BUN_FIXTURE,
+		content:
+			"import { readFile, writeFile } from 'node:fs/promises';\n" +
+			"import { spawn } from 'node:child_process';\n" +
+			"export const read = () => readFile('input.txt');\n" +
+			"export const write = () => writeFile('output.txt', 'hello');\n" +
+			"export const start = () => spawn('echo', ['hello']);\n"
+	},
 	// Proves the exports map + base config reach a plain source file at all.
 	{ path: 'src/bad.ts', content: 'var x = 1;\nexport default x;\n' },
 	// Proves the oxlint to tsgolint type-aware pipeline survives a consumer install.
@@ -115,7 +134,7 @@ export default defineConfig({ extends: [config] });
 
 const RESOLVE_CHECK = `import { createRequire } from 'node:module';
 
-const subpaths = ['', '/base', '/svelte', '/type-aware', '/vitest'];
+const subpaths = ['', '/base', '/bun', '/svelte', '/type-aware', '/vitest'];
 
 for (const sub of subpaths) {
 	const specifier = \`@himynameisdave/oxlint-config\${sub}\`;
@@ -123,6 +142,23 @@ for (const sub of subpaths) {
 	if (typeof mod.default !== 'object' || mod.default === null) {
 		throw new Error(\`\${specifier} resolved but has no default export object\`);
 	}
+}
+
+// Nested installs must not accidentally make the plugin resolvable from the app.
+for (const dependency of ['eslint-plugin-bunisms', 'eslint']) {
+	let resolved = false;
+	try {
+		import.meta.resolve(dependency);
+		resolved = true;
+	} catch (error) {
+		if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error;
+	}
+	if (resolved) throw new Error(dependency + ' unexpectedly resolves from the consumer');
+}
+const root = await import('@himynameisdave/oxlint-config');
+const { default: bun } = await import('@himynameisdave/oxlint-config/bun');
+if (root.bun !== bun || !root.default.extends.includes(bun)) {
+	throw new Error('named Bun export and default composition must use the Bun preset');
 }
 
 // The ./package.json export: publint, Renovate and some bundlers read it, and an
@@ -217,7 +253,7 @@ await Promise.all([
 
 // --- 3. Install the tarball by name, with this repo's peer versions -----------
 const peerSpecs = PEERS.map((dep) => `${dep}@${manifest.devDependencies[dep] ?? 'latest'}`);
-await Bun.$`npm install --silent --no-audit --no-fund ${tarball} ${peerSpecs}`
+await Bun.$`npm install --silent --no-audit --no-fund --install-strategy=nested ${tarball} ${peerSpecs}`
 	.cwd(projectDir)
 	.quiet();
 
@@ -237,7 +273,7 @@ if (raw === '') {
 const diagnostics =
 	raw === '' ? [] : (JSON.parse(raw) as { diagnostics: Diagnostic[] }).diagnostics;
 
-// --- 5. Assert the six consumer-visible contracts -----------------------------
+// --- 5. Assert the consumer-visible contracts -----------------------------
 expectRule(diagnostics, 'src/bad.ts', 'no-var', 'the exports map and base config resolve');
 expectRule(
 	diagnostics,
@@ -280,6 +316,90 @@ if (strays.length > 0) {
 	record(`lint escaped the fixtures and hit: ${strays.slice(0, 5).join(', ')}`);
 }
 
+// All Bun diagnostics in the composed default must retain warning severity.
+for (const rule of BUN_RULES) {
+	expectRule(diagnostics, BUN_FIXTURE, rule, 'the default includes Bun rules');
+}
+if (
+	diagnosticsIn(diagnostics, BUN_FIXTURE).some(
+		(entry) => BUN_RULES.some((rule) => entry.code.includes(rule)) && entry.severity !== 'warning'
+	)
+) {
+	record('Bun diagnostics must be warnings in the default config');
+}
+
+// Exercise the standalone preset and consumer overrides with both the current
+// development version and the supported minimum. Node/npm are the consumer under test.
+const bunConfigPath = join(projectDir, 'bun.config.ts');
+const overrideConfigPath = join(projectDir, 'bun-override.config.ts');
+await Promise.all([
+	Bun.write(
+		bunConfigPath,
+		`import bun from '@himynameisdave/oxlint-config/bun';
+export default { extends: [bun] };
+`
+	),
+	Bun.write(
+		overrideConfigPath,
+		`import bun from '@himynameisdave/oxlint-config/bun';
+export default { extends: [bun], rules: { 'bun/prefer-bun-file': 'off' } };
+`
+	)
+]);
+const checkBunConsumer = async (version: string): Promise<void> => {
+	const result =
+		await Bun.$`./node_modules/.bin/oxlint -c bun.config.ts --format json ${BUN_FIXTURE}`
+			.cwd(projectDir)
+			.nothrow()
+			.quiet();
+	const found = (JSON.parse(result.stdout.toString()) as { diagnostics: Diagnostic[] }).diagnostics;
+	if (
+		result.exitCode !== 0 ||
+		found.length !== BUN_RULES.length ||
+		found.some((entry) => entry.severity !== 'warning')
+	) {
+		record(
+			`standalone Bun preset must emit exactly three warnings and exit successfully (${version})`
+		);
+	}
+	for (const rule of BUN_RULES) {
+		expectRule(found, BUN_FIXTURE, rule, `standalone Bun preset on oxlint ${version}`);
+	}
+	const denied =
+		await Bun.$`./node_modules/.bin/oxlint -c bun.config.ts --deny-warnings ${BUN_FIXTURE}`
+			.cwd(projectDir)
+			.nothrow()
+			.quiet();
+	if (denied.exitCode !== 1) {
+		record(`--deny-warnings must fail for Bun warnings (${version})`);
+	}
+	const overridden =
+		await Bun.$`./node_modules/.bin/oxlint -c bun-override.config.ts --format json ${BUN_FIXTURE}`
+			.cwd(projectDir)
+			.nothrow()
+			.quiet();
+	const remaining = (JSON.parse(overridden.stdout.toString()) as { diagnostics: Diagnostic[] })
+		.diagnostics;
+	expectSuppressed(
+		remaining,
+		BUN_FIXTURE,
+		'prefer-bun-file',
+		`consumer rule override on ${version}`
+	);
+	for (const rule of BUN_RULES.slice(1)) {
+		expectRule(
+			remaining,
+			BUN_FIXTURE,
+			rule,
+			`other Bun rules survive a consumer override on ${version}`
+		);
+	}
+	if (overridden.exitCode !== 0) {
+		record(`consumer override failed on ${version}`);
+	}
+};
+await checkBunConsumer(manifest.devDependencies.oxlint);
+
 // --- 6. Assert every subpath resolves by package name -------------------------
 const resolved = await Bun.$`node resolve-check.mjs`.cwd(projectDir).nothrow().quiet();
 if (resolved.exitCode !== 0) {
@@ -288,6 +408,13 @@ if (resolved.exitCode !== 0) {
 	const reason = lines.find((line) => /(?:Error|ERR_[A-Z_]+)/u.test(line)) ?? lines[0];
 	record(`subpath imports failed (exports map): ${reason.trim()}`);
 }
+
+// Keep the floor test independent of the developer's installed oxlint version.
+const minimum = manifest.peerDependencies.oxlint.split(' ')[0].replace(/^>=/u, '');
+await Bun.$`npm install --silent --no-audit --no-fund --install-strategy=nested oxlint@${minimum}`
+	.cwd(projectDir)
+	.quiet();
+await checkBunConsumer(minimum);
 
 // --- 7. Report ------------------------------------------------------------------
 if (failures.length > 0) {
@@ -303,7 +430,7 @@ if (failures.length > 0) {
 } else {
 	await rm(workDir, { recursive: true, force: true });
 	console.log(
-		`OK: packed tarball installs, all 5 subpaths + ./package.json resolve,` +
-			` ${FIXTURES.length} fixtures behave.`
+		`OK: packed tarball installs, all 6 subpaths + ./package.json resolve,` +
+			` ${FIXTURES.length} fixtures behave; Bun warnings/overrides verified at the minimum and development oxlint versions.`
 	);
 }
