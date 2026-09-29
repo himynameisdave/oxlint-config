@@ -23,7 +23,7 @@ export default defineConfig({
 		// obj["key"] for a statically-known key is obj.key.
 		'typescript/dot-notation': 'error',
 		// NOTE: tsgolint also implements naming-convention and prefer-destructuring,
-		// but oxlint 1.75 doesn't register those rule names yet — add them here once
+		// but oxlint 1.85 doesn't register those rule names yet — add them here once
 		// they land upstream.
 		// delete arr[i] leaves a hole, not a shorter array — splice/filter instead.
 		'typescript/no-array-delete': 'error',
