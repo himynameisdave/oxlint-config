@@ -130,20 +130,8 @@ The rule set is reviewed and updated with this package; upstream updates may add
 
 ## Enabled plugins
 
-| Plugin | OXC documentation | Config |
-| --- | --- | --- |
-| `eslint` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
-| `typescript` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base`, `type-aware` |
-| `unicorn` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
-| `oxc` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
-| `import` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
-| `promise` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
-| `node` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
-| `jsdoc` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
-| `vitest` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `vitest` add-on |
-| `bun` | [JavaScript plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins) | `bun` add-on |
-
-Both add-ons are included in the default config.
+- Core: `eslint`, `typescript`, `unicorn`, `oxc`, `import`, `promise`, `node`, `jsdoc`
+- Add-ons: `vitest`, `bun` (both included in the default config)
 
 The `vitest` stance: test suites deserve the same rigor as app code. The flagship rule is `no-focused-tests`: a committed `it.only` makes CI silently green while skipping every other test. The add-on's rules only fire on test-shaped syntax, so extending it is harmless for non-test files. **Not for `bun:test` suites:** oxlint recognizes test functions by import source (`vitest`, `@jest/globals`) or bare globals, and `import { it } from 'bun:test'` is invisible to it (verified empirically; see `src/vitest.ts`). Bun-native suites get no lint coverage until oxlint supports `bun:test` upstream.
 
