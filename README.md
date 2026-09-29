@@ -130,11 +130,24 @@ The rule set is reviewed and updated with this package; upstream updates may add
 
 ## Enabled plugins
 
-`typescript` · `unicorn` · `oxc` · `import` · `promise` · `node` · `jsdoc` (plus the core `eslint` rules) · `vitest` (via the `vitest` add-on) · `bun` (via the `bun` JS plugin add-on). Both add-ons are included in the default.
+| Plugin | OXC documentation | Config |
+| --- | --- | --- |
+| `eslint` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
+| `typescript` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base`, `type-aware` |
+| `unicorn` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
+| `oxc` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
+| `import` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
+| `promise` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
+| `node` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
+| `jsdoc` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `base` |
+| `vitest` | [Built-in plugins](https://oxc.rs/docs/guide/usage/linter/plugins#supported-plugins) | `vitest` add-on |
+| `bun` | [JavaScript plugins](https://oxc.rs/docs/guide/usage/linter/js-plugins) | `bun` add-on |
+
+Both add-ons are included in the default config.
 
 The `vitest` stance: test suites deserve the same rigor as app code. The flagship rule is `no-focused-tests`: a committed `it.only` makes CI silently green while skipping every other test. The add-on's rules only fire on test-shaped syntax, so extending it is harmless for non-test files. **Not for `bun:test` suites:** oxlint recognizes test functions by import source (`vitest`, `@jest/globals`) or bare globals, and `import { it } from 'bun:test'` is invisible to it (verified empirically; see `src/vitest.ts`). Bun-native suites get no lint coverage until oxlint supports `bun:test` upstream.
 
-The `jsdoc` stance: exported symbols should be documented; internal code doesn't have to be. Any JSDoc you _do_ write must be complete and descriptive (a partial `@param` list or a bare `@returns` errors), and types never go in JSDoc (TypeScript owns them). oxlint has no `require-jsdoc` rule yet, so _existence_ of docs on exports stays a review expectation until upstream ships one (this config will adopt it with `publicOnly` when it lands).
+The `jsdoc` stance: exported symbols should be documented; internal code doesn't have to be. Any JSDoc you _do_ write must be complete and descriptive (a partial `@param` list or a bare `@returns` errors), and types never go in JSDoc (TypeScript owns them). [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) handles comment formatting. oxlint has no `require-jsdoc` rule yet, so _existence_ of docs on exports stays a review expectation until upstream ships one (this config will adopt it with `publicOnly` when it lands).
 
 ## Svelte support
 
