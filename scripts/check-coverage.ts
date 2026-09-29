@@ -1,19 +1,20 @@
 /**
- * Verifies the configs are exhaustive against the INSTALLED oxlint version:
+ * Verifies the configs are exhaustive against INSTALLED oxlint and bunisms:
  *
  *   1. Extracts every registered `plugin/rule` from oxlint's type definitions,
  *      and asserts every plugin prefix has a stance — configured or excluded.
  *   2. Resolves each rule's category via `oxlint --print-config` (one run per category).
  *   3. Asserts every rule we defer to the nursery is still IN the nursery.
  *   4. Asserts: every registered rule for our enabled plugins appears in exactly
- *      one of base.ts / type-aware.ts / vitest.ts — no missing, stale, duplicates.
+ *      one of base.ts / bun.ts / type-aware.ts / vitest.ts — no missing, stale, duplicates.
  *   5. Asserts every rule named in an `overrides` block still exists upstream.
  *
  * Every severity it walks along the way — top level or override — must be
  * "error" or "off" (iron rule 2).
  *
- * Exits non-zero with a diff when oxlint added/removed/renamed/promoted rules,
- * which is the signal to run the update workflow (.claude/skills/update-oxlint-rules).
+ * Exits non-zero when upstream rules are missing or stale. For native oxlint
+ * rules, run the update workflow (.claude/skills/update-oxlint-rules); for
+ * bunisms, review the pinned dependency update and explicitly configure its rules.
  *
  * Runs under bun (TypeScript, no build step) on Bun's own APIs — Bun.file,
  * Bun.write, Bun.spawnSync. `node:os` tmpdir is the lone holdout: Bun ships no
@@ -22,7 +23,9 @@
  * `check-coverage` runs tsc first.
  */
 import { tmpdir } from 'node:os';
+import bunisms from 'eslint-plugin-bunisms';
 import base from '../dist/base.js';
+import bun from '../dist/bun.js';
 import svelte from '../dist/svelte.js';
 import typeAware from '../dist/type-aware.js';
 import vitest from '../dist/vitest.js';
@@ -64,8 +67,7 @@ const CATEGORIES = [
 	'nursery'
 ];
 
-// Iron rule 2: "error" or "off", never "warn". Applied wherever a rule is
-// declared — a stray "warn" inside an overrides block ships just as silently.
+// Iron rule 2: "error" or "off", never "warn". Check every preset and override.
 function checkSeverity(name: string, file: string, entry: unknown): void {
 	const severity: unknown = Array.isArray(entry) ? entry[0] : entry;
 	if (severity !== 'error' && severity !== 'off') {
@@ -107,7 +109,9 @@ for (const prefix of new Set(prefixed.map((rule) => rule.split('/')[0] ?? ''))) 
 
 const registered = new Set<string>([
 	...prefixed.filter((rule) => PLUGINS.includes(rule.split('/')[0] ?? '')),
-	...bare.map((rule) => `eslint/${rule}`)
+	...bare.map((rule) => `eslint/${rule}`),
+	// JS plugins are absent from oxlint's native rule types; inspect the pinned export.
+	...Object.keys(bunisms.rules).map((rule) => `bun/${rule}`)
 ]);
 
 // --- 2. Category resolution via --print-config -------------------------------
@@ -164,6 +168,7 @@ for (const rule of NURSERY_WATCH) {
 const configured = new Map<string, string>();
 for (const [file, config] of Object.entries({
 	'base.ts': base,
+	'bun.ts': bun,
 	'type-aware.ts': typeAware,
 	'vitest.ts': vitest
 })) {
@@ -188,17 +193,20 @@ const stale = [...configured.keys()]
 	.filter((rule) => !registered.has(rule))
 	.toSorted((a, b) => a.localeCompare(b));
 
+// The bun alias belongs to bunisms, including stale names no longer exported.
+const ruleSource = (rule: string): string => (rule.startsWith('bun/') ? 'bunisms' : 'oxlint');
+
 if (missing.length > 0) {
-	console.error('MISSING (registered in oxlint, not decided in any config):');
 	for (const rule of missing) {
-		console.error(`  ${rule}  [${categoryOf.get(rule) ?? 'uncategorized'}]`);
+		console.error(
+			`MISSING (registered in ${ruleSource(rule)}, not decided in any config): ${rule} [${categoryOf.get(rule) ?? 'uncategorized'}]`
+		);
 	}
 	process.exitCode = 1;
 }
 if (stale.length > 0) {
-	console.error('STALE (configured, but no longer registered in oxlint):');
 	for (const rule of stale) {
-		console.error(`  ${rule}`);
+		console.error(`STALE (configured, but no longer registered in ${ruleSource(rule)}): ${rule}`);
 	}
 	process.exitCode = 1;
 }
@@ -218,6 +226,7 @@ type ConfigWithOverrides = {
 let overrideEntries = 0;
 for (const [file, config] of Object.entries<ConfigWithOverrides>({
 	'base.ts': base,
+	'bun.ts': bun,
 	'svelte.ts': svelte,
 	'type-aware.ts': typeAware,
 	'vitest.ts': vitest
@@ -228,7 +237,9 @@ for (const [file, config] of Object.entries<ConfigWithOverrides>({
 			const name = rawName.includes('/') ? rawName : `eslint/${rawName}`;
 			checkSeverity(name, file, entry);
 			if (!registered.has(name)) {
-				console.error(`STALE (override): ${name} in ${file}`);
+				console.error(
+					`STALE (override, no longer registered in ${ruleSource(name)}): ${name} in ${file}`
+				);
 				process.exitCode = 1;
 			}
 		}

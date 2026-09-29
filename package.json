@@ -36,6 +36,10 @@
 			"types": "./dist/base.d.ts",
 			"default": "./dist/base.js"
 		},
+		"./bun": {
+			"types": "./dist/bun.d.ts",
+			"default": "./dist/bun.js"
+		},
 		"./svelte": {
 			"types": "./dist/svelte.d.ts",
 			"default": "./dist/svelte.js"
@@ -63,8 +67,12 @@
 		"format:check": "oxfmt --check",
 		"test": "bun run lint && bun run format:check && bun run check-coverage && bun run test:consumer"
 	},
+	"dependencies": {
+		"eslint-plugin-bunisms": "0.1.0"
+	},
 	"devDependencies": {
 		"@types/bun": "^1.4.2",
+		"@types/node": "^26.1.1",
 		"oxfmt": "0.65.0",
 		"oxlint": "1.80.0",
 		"oxlint-tsgolint": "^7.0.2001",

@@ -31,8 +31,8 @@ Until this is configured, the workflow's publish step fails with an auth error; 
 From GitHub (web or mobile app): **Actions → Release → Run workflow**, leave the branch on `main`, and pick the bump:
 
 - **patch**: comment fixes, README/docs, tooling that doesn't change shipped rules
-- **minor**: rule churn of any kind. New rules decided (e.g. after an oxlint upgrade via the `update-oxlint-rules` skill), an existing rule flipped `error` ↔ `off`, options tightened. All of these can add errors to a consumer's CI, and that's the deal `^` buys them.
-- **major**: structural changes. An oxlint major bump, a newly enabled plugin, an entry point renamed or removed.
+- **minor**: rule churn of any kind. New rules decided (e.g. after an oxlint upgrade via the `update-oxlint-rules` skill), an existing rule flipped `error` ↔ `off`, options tightened, or plugin updates that change findings. All of these can add errors to a consumer's CI, and that's the deal `^` buys them.
+- **major**: structural changes. An oxlint major bump, a newly enabled plugin in an existing preset, a public rule or entry point renamed or removed, or incompatible runtime requirements.
 
 The consumer-facing statement of this policy lives in README → Versioning & compatibility. Change one, change the other.
 
@@ -41,7 +41,7 @@ The workflow then runs, in order:
 1. **Guard.** Refuses to run from any ref but `main`.
 2. **Gates.** `bun run test` — all four: `lint` (tsc build + self-lint with our own config, type-aware on), `format:check` (oxfmt), `check-coverage` (every registered oxlint rule has an explicit decision), and `test:consumer` (pack, install and lint from a scratch consumer project). A red gate aborts the release before anything is versioned or published.
 3. **Version + tag.** `npm version <bump>` commits `🔖 Release vX.Y.Z` and tags `vX.Y.Z` (on the runner only, so far).
-4. **Publish.** `prepublishOnly` runs the build (`tsc` → `dist/`), then npm uploads the tarball with provenance (13 files: two per entry point in `dist/` (`.js` + `.d.ts`, five entry points) plus LICENSE, README and package.json; `src/` never ships). Adding an entry point adds two files: check with `npm publish --dry-run` and update this count.
+4. **Publish.** `prepublishOnly` runs the build (`tsc` → `dist/`), then npm uploads the tarball with provenance (15 files: two per entry point in `dist/` (`.js` + `.d.ts`, six entry points) plus LICENSE, README and package.json; `src/` never ships). Adding an entry point adds two files: check with `npm publish --dry-run` and update this count.
 5. **Push + release.** The version commit and tag are pushed to `main`, and a GitHub release is created with auto-generated notes. Edit it afterwards to add highlights (notable new rules / flips) if warranted.
 
 Publish happens before the push on purpose: a failed publish leaves nothing on the remote to clean up. The reverse — publish succeeds, a later step fails — is the case that needs a human; see [If a run fails after the publish step](#if-a-run-fails-after-the-publish-step).
@@ -59,6 +59,10 @@ cd "$(mktemp -d)" && bun init -y > /dev/null && bun add -D oxlint @himynameisdav
 ```
 
 Sanity-check the [npm page](https://www.npmjs.com/package/@himynameisdave/oxlint-config) renders the README, and that the [FOSSA badges](https://app.fossa.com/projects/git%2Bgithub.com%2Fhimynameisdave%2Foxlint-config) go green once FOSSA rescans.
+
+The next release after adding the Bun preset must select **major** (2.0.0): the default now enables bunisms and assumes Bun-targeted code. Include the README migration guidance in its release notes. The workflow owns the version bump; do not pre-bump package.json in the feature PR.
+
+Bunisms stays exactly pinned in `dependencies`. For its update PRs, review upstream changes, update every explicit rule decision/comment, and run the coverage and packed-consumer gates before choosing a release size. New rules are minor; public rule renames/removals or incompatible runtime requirements are major. A dependency update is patch only if it does not change lint behavior or compatibility.
 
 ## Manual fallback (Actions unavailable)
 

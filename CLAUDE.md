@@ -14,6 +14,7 @@ Shareable oxlint config package. The product IS the rule decisions — treat `sr
 ## Layout
 
 - `src/base.ts` — all non-type-aware rules (framework-agnostic) + test-file override + ignorePatterns
+- `src/bun.ts` — all rules from exactly pinned bunisms, errors; resolve its direct dependency from this package
 - `src/svelte.ts` — `.svelte`/`.svelte.ts` overrides only
 - `src/vitest.ts` — vitest plugin rules (opt-in add-on; inert on non-test syntax)
 - `src/type-aware.ts` — tsgolint rules + `options.typeAware` + handoff-offs for base rules the TS versions supersede
@@ -41,7 +42,7 @@ Shareable oxlint config package. The product IS the rule decisions — treat `sr
 
 Two kinds of exception, and it matters which one you're invoking:
 
-1. **Bun has no equivalent.** Use the `node:` module and say so in a comment. Live cases: `tmpdir()` from `node:os` (no Bun temp-directory API — reconstructing one from `$TMPDIR` would be less correct than what it replaces), plus `node:fs/promises`, `node:path` and `node:url` in `scripts/consumer-smoke.ts`.
+1. **Bun has no equivalent.** Use the `node:` module and say so in a comment. Live cases: `tmpdir()` from `node:os` (no Bun temp-directory API — reconstructing one from `$TMPDIR` would be less correct than what it replaces), plus `node:fs/promises`, `node:path` and `node:url` in `scripts/consumer-smoke.ts`. The published `src/bun.ts` uses `node:url` because its dependency resolver must also run under Node.
 2. **Node/npm _is_ the thing under test.** `scripts/consumer-smoke.ts` runs `npm pack`, `npm install` and `node resolve-check.mjs` on purpose: it proves the published tarball works for a real consumer, and real consumers run npm and Node. Don't "fix" these to Bun — doing so would delete the coverage. Same logic for anything else asserting consumer-side behaviour.
 
 Two gotchas when writing Bun scripts here:
@@ -54,4 +55,5 @@ Two gotchas when writing Bun scripts here:
 - Commits: emoji + short subject, why-explanation in the body (`✨ Add base config`).
 - Tabs for indentation; `.js` extensions on relative imports (NodeNext).
 - When oxlint ships new rules upstream, use the `update-oxlint-rules` skill (`.claude/skills/update-oxlint-rules/`).
-- Version bumps: any rule churn (new rules, a rule flipped error↔off, options tightened) = minor. Major is reserved for structural changes: an oxlint major, a new plugin, an entry point renamed/removed.
+- Version bumps: any rule churn (new rules, a rule flipped error↔off, options tightened, changed plugin detection) = minor. Major is reserved for structural changes: an oxlint major, a new plugin enabled in an existing preset, public rule/entry point renamed or removed, incompatible runtime requirements. The Bun preset/default addition requires the next release to be major (2.0.0); let the Release workflow bump the version.
+- Bunisms updates: keep an exact dependency pin, review every upstream change, update explicit rules and rationale comments, and run all gates. Coverage reads `plugin.rules` only at development time; never auto-enable rules in the shipped config. All Bun rules are errors; no preset may declare warnings.
