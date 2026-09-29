@@ -110,7 +110,7 @@ Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule f
 
 ## Bun support and upstream updates
 
-The `bun` preset enables the reviewed rules from `eslint-plugin-bunisms` as errors. The plugin is bundled as a runtime dependency, so consumers only need this config and Oxlint. Use it for code targeting Bun >=1.4.0.
+The `bun` preset enables the reviewed rules from [`eslint-plugin-bunisms`](https://github.com/himynameisdave/eslint-plugin-bunisms) as errors. The plugin is bundled as a runtime dependency, so consumers only need this config and Oxlint. Use it for code targeting Bun >=1.4.0.
 
 ```ts
 import { defineConfig } from 'oxlint';
