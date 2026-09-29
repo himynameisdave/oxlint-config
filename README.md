@@ -110,7 +110,7 @@ Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule f
 
 ## Bun support and upstream updates
 
-The `bun` preset includes `eslint-plugin-bunisms` **0.1.0** as an exactly pinned runtime dependency. For this preset, consumers install only this config and Oxlint; no separate bunisms, ESLint, or Bun runtime installation is needed to run the linter. Bunisms declares ESLint as an optional peer for ESLint users; Oxlint provides the plugin runtime here, so this package does not install ESLint. The linted application code should target Bun >=1.4.0.
+The `bun` preset enables the reviewed rules from `eslint-plugin-bunisms` as errors. The plugin is bundled as a runtime dependency, so consumers only need this config and Oxlint. Use it for code targeting Bun >=1.4.0.
 
 ```ts
 import { defineConfig } from 'oxlint';
@@ -126,15 +126,7 @@ export default defineConfig({
 });
 ```
 
-All three rules are explicit errors: `bun/prefer-bun-file`, `bun/prefer-bun-write`, and `bun/prefer-bun-spawn`. They suggest Bun APIs for Node file reads, writes, and subprocess calls; they do not automatically rewrite code. They can report on Node-targeted code too, so use the standalone preset only where Bun is the intended runtime. Oxlint's JS plugin support is alpha; the consumer smoke test checks these rules at the supported Oxlint minimum and the development version.
-
-Plugin resolution uses `fileURLToPath(import.meta.resolve('eslint-plugin-bunisms'))` inside the installed config package. This works with nested dependencies and does not depend on hoisting or a consumer-installed copy.
-
-“All rules” means all rules in the **pinned, reviewed version**. We do not generate the shipped config from upstream presets or discover new rules at runtime. Dependabot proposes dependency updates; our coverage gate compares the plugin's exported rules with the explicit config and rejects missing/stale entries. Each update must review rule behavior and compatibility, update the decisions/comments, and pass consumer tests before release. A new upstream release alone changes nothing for consumers.
-
-New rules and detection changes ship here as **minor** releases under the policy above, even when new errors fail CI. Public rule renames/removals and incompatible runtime requirements are **major** changes. Upstream version numbers prompt review rather than determine this package's release number. Consumers wanting deliberate rule upgrades should use `~` plus a committed lockfile.
-
-**Migration for the next major release (2.0.0):** the default now includes Bun. Existing Node/browser consumers should compose `base`, `svelte`, `vitest`, and/or `typeAware` without `bun`. Bun consumers can keep the default import; review the new errors before upgrading CI.
+The rule set is reviewed and updated with this package; upstream updates may add new lint errors. For Node or browser projects, compose the other presets without `bun`.
 
 ## Enabled plugins
 
