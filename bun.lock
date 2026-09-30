@@ -5,7 +5,7 @@
     "": {
       "name": "@himynameisdave/oxlint-config",
       "dependencies": {
-        "eslint-plugin-bunisms": "0.1.0",
+        "eslint-plugin-bunisms": "0.6.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.2",
@@ -159,7 +159,7 @@
 
     "bun-types": ["bun-types@1.4.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w=="],
 
-    "eslint-plugin-bunisms": ["eslint-plugin-bunisms@0.1.0", "", { "peerDependencies": { "eslint": ">=9.0.0 <11" }, "optionalPeers": ["eslint"] }, "sha512-eLYaDHeQnp+M0pjS0qqU0FdcvGqxNSHX2M4r914NdRsNfHYRce1pUETA3sP8UBkaLgfBpVbhYtjXUjCn1a6zWQ=="],
+    "eslint-plugin-bunisms": ["eslint-plugin-bunisms@0.6.0", "", { "peerDependencies": { "eslint": ">=9.0.0 <11" }, "optionalPeers": ["eslint"] }, "sha512-+ELDwVJ/NLcLRo6hFSfV2K3UcZGfYG8laTfNN0v28vJyzruM9MnfH3OUEKdvRXmdXQBTj1KyI+jn0dwAkyAl5w=="],
 
     "oxfmt": ["oxfmt@0.70.0", "", { "dependencies": { "tinypool": "2.1.2" }, "optionalDependencies": { "@oxfmt/binding-android-arm-eabi": "0.70.0", "@oxfmt/binding-android-arm64": "0.70.0", "@oxfmt/binding-darwin-arm64": "0.70.0", "@oxfmt/binding-darwin-x64": "0.70.0", "@oxfmt/binding-freebsd-x64": "0.70.0", "@oxfmt/binding-linux-arm-gnueabihf": "0.70.0", "@oxfmt/binding-linux-arm-musleabihf": "0.70.0", "@oxfmt/binding-linux-arm64-gnu": "0.70.0", "@oxfmt/binding-linux-arm64-musl": "0.70.0", "@oxfmt/binding-linux-ppc64-gnu": "0.70.0", "@oxfmt/binding-linux-riscv64-gnu": "0.70.0", "@oxfmt/binding-linux-riscv64-musl": "0.70.0", "@oxfmt/binding-linux-s390x-gnu": "0.70.0", "@oxfmt/binding-linux-x64-gnu": "0.70.0", "@oxfmt/binding-linux-x64-musl": "0.70.0", "@oxfmt/binding-openharmony-arm64": "0.70.0", "@oxfmt/binding-win32-arm64-msvc": "0.70.0", "@oxfmt/binding-win32-ia32-msvc": "0.70.0", "@oxfmt/binding-win32-x64-msvc": "0.70.0" }, "peerDependencies": { "svelte": "^5.0.0", "vite-plus": "*" }, "optionalPeers": ["svelte", "vite-plus"], "bin": { "oxfmt": "bin/oxfmt" } }, "sha512-IsHxZ4y0wQLLMhnrJblBJgZsLDzfULrJnAw5j/QqsTlMa/m3AqsbToi+W71uhBGaqlqq/PbbjvHc09TJwdv3Tw=="],
 

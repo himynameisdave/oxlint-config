@@ -110,7 +110,7 @@ Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule f
 
 ## Bun support and upstream updates
 
-The `bun` preset includes `eslint-plugin-bunisms` **0.1.0** as an exactly pinned runtime dependency. For this preset, consumers install only this config and Oxlint; no separate bunisms, ESLint, or Bun runtime installation is needed to run the linter. Bunisms declares ESLint as an optional peer for ESLint users; Oxlint provides the plugin runtime here, so this package does not install ESLint. The linted application code should target Bun >=1.4.0.
+The `bun` preset includes `eslint-plugin-bunisms` **0.6.0** as an exactly pinned runtime dependency. For this preset, consumers install only this config and Oxlint; no separate bunisms, ESLint, or Bun runtime installation is needed to run the linter. Bunisms declares ESLint as an optional peer for ESLint users; Oxlint provides the plugin runtime here, so this package does not install ESLint. The linted application code should target Bun >=1.4.0.
 
 ```ts
 import { defineConfig } from 'oxlint';
@@ -126,7 +126,9 @@ export default defineConfig({
 });
 ```
 
-All three rules are explicit errors: `bun/prefer-bun-file`, `bun/prefer-bun-write`, and `bun/prefer-bun-spawn`. They suggest Bun APIs for Node file reads, writes, and subprocess calls; they do not automatically rewrite code. They can report on Node-targeted code too, so use the standalone preset only where Bun is the intended runtime. Oxlint's JS plugin support is alpha; the consumer smoke test checks these rules at the supported Oxlint minimum and the development version.
+All eight rules are explicit errors: `bun/prefer-bun-file`, `bun/prefer-bun-write`, `bun/prefer-bun-spawn`, `bun/prefer-bun-shell`, `bun/no-dotenv`, `bun/prefer-import-meta-dir`, `bun/prefer-import-meta-main`, and `bun/prefer-import-meta-path`. They suggest Bun APIs for Node file reads, writes, and subprocess calls; they do not automatically rewrite code. They can report on Node-targeted code too, so use the standalone preset only where Bun is the intended runtime. Oxlint's JS plugin support is alpha; the consumer smoke test checks these rules at the supported Oxlint minimum and the development version.
+
+Newly enforced by this update: `bun/prefer-bun-shell` (Bun Shell for shell-oriented execution), `bun/no-dotenv` (Bun loads environment files automatically), `bun/prefer-import-meta-dir` (`import.meta.dir` for the module directory), `bun/prefer-import-meta-main` (`import.meta.main` for the entrypoint check), and `bun/prefer-import-meta-path` (`import.meta.path` for the module path).
 
 Plugin resolution uses `fileURLToPath(import.meta.resolve('eslint-plugin-bunisms'))` inside the installed config package. This works with nested dependencies and does not depend on hoisting or a consumer-installed copy.
 
