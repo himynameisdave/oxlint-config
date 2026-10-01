@@ -21,6 +21,24 @@ export default defineConfig({
 		'bun/prefer-bun-write': 'error',
 		// Bun's subprocess APIs integrate directly with its runtime and streams.
 		// https://github.com/himynameisdave/eslint-plugin-bunisms/blob/main/docs/rules/prefer-bun-spawn.md
-		'bun/prefer-bun-spawn': 'error'
+		'bun/prefer-bun-spawn': 'error',
+		// Bun Shell is the cross-platform API for shell-oriented process execution.
+		'bun/prefer-bun-shell': 'error',
+		// Bun loads environment files automatically, making dotenv redundant.
+		'bun/no-dotenv': 'error',
+		// Bun exposes the current module directory directly.
+		'bun/prefer-import-meta-dir': 'error',
+		// Bun exposes an entrypoint check directly on import.meta.
+		'bun/prefer-import-meta-main': 'error',
+		// Bun exposes the current module path directly on import.meta.
+		'bun/prefer-import-meta-path': 'error',
+		// Bun's native CryptoHasher handles supported cryptographic digest chains.
+		'bun/prefer-bun-crypto-hasher': 'error',
+		// Fetch provides Bun's native promise-based HTTP client API.
+		'bun/prefer-fetch': 'error',
+		// Bun ESM exposes module-relative resolution through import.meta.
+		'bun/prefer-import-meta-resolve': 'error',
+		// Static imports can run module side effects before a late Bun mock.
+		'bun/no-late-module-mock': 'error'
 	}
 });
