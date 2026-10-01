@@ -68,7 +68,7 @@
 		"test": "bun run lint && bun run format:check && bun run check-coverage && bun run test:consumer"
 	},
 	"dependencies": {
-		"eslint-plugin-bunisms": "0.1.0"
+		"eslint-plugin-bunisms": "0.10.0"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.4.2",
