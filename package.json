@@ -73,14 +73,14 @@
 	"devDependencies": {
 		"@types/bun": "^1.4.2",
 		"@types/node": "^26.1.1",
-		"oxfmt": "0.70.0",
-		"oxlint": "1.85.0",
-		"oxlint-tsgolint": "7.0.2003",
+		"oxfmt": "0.73.0",
+		"oxlint": "1.88.0",
+		"oxlint-tsgolint": "7.0.2004",
 		"typescript": "^7.0.0"
 	},
 	"peerDependencies": {
-		"oxlint": ">=1.85.0 <2",
-		"oxlint-tsgolint": ">=7.0.2001"
+		"oxlint": ">=1.88.0 <2",
+		"oxlint-tsgolint": ">=7.0.2003"
 	},
 	"peerDependenciesMeta": {
 		"oxlint-tsgolint": {

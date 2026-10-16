@@ -23,7 +23,7 @@ export default defineConfig({
 		// obj["key"] for a statically-known key is obj.key.
 		'typescript/dot-notation': 'error',
 		// NOTE: tsgolint also implements naming-convention and prefer-destructuring,
-		// but oxlint 1.85 doesn't register those rule names yet — add them here once
+		// but oxlint 1.88 doesn't register those rule names yet — add them here once
 		// they land upstream.
 		// delete arr[i] leaves a hole, not a shorter array — splice/filter instead.
 		'typescript/no-array-delete': 'error',
@@ -39,6 +39,8 @@ export default defineConfig({
 		'typescript/no-floating-promises': 'error',
 		// for-in over an array iterates string keys and prototype pollution.
 		'typescript/no-for-in-array': 'error',
+		// A generic or intersection that collapses to `{}` accepts anything non-nullish: a broken type.
+		'typescript/no-generated-empty-object-type': 'error',
 		// setTimeout("string") — the type-aware twin of the base rule (see off below).
 		'typescript/no-implied-eval': 'error',
 		// void x to discard a value the type system says is already void.

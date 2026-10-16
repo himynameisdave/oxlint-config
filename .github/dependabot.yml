@@ -17,8 +17,13 @@ updates:
     schedule:
       interval: 'weekly'
     groups:
-      oxc-toolchain:
+      # oxlint bumps often register new rules, which fail check-coverage until
+      # decided. Kept apart from oxfmt so a formatter bump can merge on its own.
+      oxlint:
         patterns:
           - 'oxlint'
           - 'oxlint-tsgolint'
+      oxfmt:
+        patterns:
           - 'oxfmt'
+          - '@himynameisdave/oxfmt-config'
