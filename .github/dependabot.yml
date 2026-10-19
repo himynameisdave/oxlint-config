@@ -27,3 +27,7 @@ updates:
         patterns:
           - 'oxfmt'
           - '@himynameisdave/oxfmt-config'
+    ignore:
+      # Pinned to the engines.node floor (22.18) so the build rejects newer Node APIs.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']

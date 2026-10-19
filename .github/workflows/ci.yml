@@ -29,3 +29,29 @@ jobs:
 
       - name: Consumer smoke test (packs, installs, lints as a consumer would)
         run: bun run test:consumer
+
+  # The smoke test is the only gate that runs real Node (npm, oxlint, resolve-check),
+  # so it's the one repeated on the oldest supported Node and the newest.
+  node-compat:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22.18.0 is engines.node in package.json; move them together.
+        node-version: ['22.18.0', 'latest']
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Consumer smoke test on Node ${{ matrix.node-version }}
+        run: bun run test:consumer
