@@ -30,6 +30,7 @@ yarn add -D oxlint @himynameisdave/oxlint-config
 ```
 
 - Requires `oxlint >=1.88.0 <2`. Why that range, and how it moves: [Versioning & compatibility](#versioning--compatibility).
+- Requires Node.js `>=22.18.0`. Node 20 is not supported.
 - Type-aware linting requires TypeScript 7+ and a `strict` tsconfig.
 
 ## Configurations
@@ -103,6 +104,8 @@ Rule churn is deliberately _not_ a major bump. A newly-decided rule and a rule f
 `^` accepts new errors on update. Don't want that? Use `~` (patch only) with a committed lockfile, and upgrade deliberately.
 
 **Supported oxlint: `>=1.88.0 <2`.** The floor is the version this release's rule inventory was certified against, so it moves whenever new rules are decided. Older oxlint skips rules it doesn't know instead of erroring, which means a stale binary quietly under-lints. The `<2` ceiling is there because an oxlint 2.0 needs a release here anyway.
+
+**Supported Node: `>=22.18.0`.** oxlint loads `oxlint.config.ts` with Node's built-in TypeScript support, which is only on by default from 22.18. Node 20 is end-of-life and not supported. CI runs the packed-tarball smoke test on 22.18.0 and on the latest Node release. Raising the floor is a major.
 
 **Type-aware assumes a strict tsconfig.** The `type-aware` config expects `"strict": true`, and does its best work with `"noUncheckedIndexedAccess"`. Without them, rules like `typescript/no-unnecessary-condition` both over- and under-report.
 
