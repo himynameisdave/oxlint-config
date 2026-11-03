@@ -69,6 +69,8 @@ export default defineConfig({
 		'typescript/no-unnecessary-type-conversion': 'error',
 		// A type param used once constrains nothing — inline it.
 		'typescript/no-unnecessary-type-parameters': 'error',
+		// Raw numbers or strings assigned to an enum bypass its member constraints.
+		'typescript/no-unsafe-enum-assignment': 'error',
 		// enumValue === "raw string" bypasses the enum's whole point.
 		'typescript/no-unsafe-enum-comparison': 'error',
 		// Unary minus on non-numbers produces NaN silently.
