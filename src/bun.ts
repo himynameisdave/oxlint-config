@@ -48,6 +48,9 @@ export default defineConfig({
 		'bun/prefer-import-meta-resolve': 'error',
 		// Static imports can run module side effects before a late Bun mock.
 		// https://github.com/himynameisdave/eslint-plugin-bunisms/blob/main/docs/rules/no-late-module-mock.md
-		'bun/no-late-module-mock': 'error'
+		'bun/no-late-module-mock': 'error',
+		// Restoring spies after each test prevents mocks from leaking into later tests.
+		// https://github.com/himynameisdave/eslint-plugin-bunisms/blob/main/docs/rules/prefer-mock-restore-in-after-each.md
+		'bun/prefer-mock-restore-in-after-each': 'error'
 	}
 });
