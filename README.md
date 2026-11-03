@@ -7,7 +7,7 @@
 
 > An opinionated [oxlint](https://oxc.rs/docs/guide/usage/linter.html) config, by and for [himynameisdave](https://github.com/himynameisdave).
 
-The spiritual successor to [eslint-config-himynameisdave](https://github.com/himynameisdave/eslint-config-himynameisdave), rebuilt for the oxc era. Every rule from every enabled plugin (all ~610 of them) is listed explicitly with a severity and a one-line reason. No category-level magic, no "recommended" black boxes.
+The spiritual successor to [eslint-config-himynameisdave](https://github.com/himynameisdave/eslint-config-himynameisdave), rebuilt for the oxc era. Every rule from every enabled plugin (all ~630 of them) is listed explicitly with a severity and a one-line reason. No category-level magic, no "recommended" black boxes.
 
 ## Installation
 
