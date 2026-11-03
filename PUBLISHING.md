@@ -60,8 +60,6 @@ cd "$(mktemp -d)" && bun init -y > /dev/null && bun add -D oxlint @himynameisdav
 
 Sanity-check the [npm page](https://www.npmjs.com/package/@himynameisdave/oxlint-config) renders the README, and that the [FOSSA badges](https://app.fossa.com/projects/git%2Bgithub.com%2Fhimynameisdave%2Foxlint-config) go green once FOSSA rescans.
 
-The next release after adding the Bun preset must select **major** (2.0.0): the default now enables bunisms and assumes Bun-targeted code. Include the README migration guidance in its release notes. The workflow owns the version bump; do not pre-bump package.json in the feature PR.
-
 Bunisms stays exactly pinned in `dependencies`. For its update PRs, review upstream changes, update every explicit rule decision/comment, and run the coverage and packed-consumer gates before choosing a release size. New rules are minor; public rule renames/removals or incompatible runtime requirements are major. A dependency update is patch only if it does not change lint behavior or compatibility.
 
 ## Manual fallback (Actions unavailable)

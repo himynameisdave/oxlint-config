@@ -23,7 +23,7 @@ export default defineConfig({
 		// obj["key"] for a statically-known key is obj.key.
 		'typescript/dot-notation': 'error',
 		// NOTE: tsgolint also implements naming-convention and prefer-destructuring,
-		// but oxlint 1.88 doesn't register those rule names yet — add them here once
+		// but oxlint 1.90 doesn't register those rule names yet — add them here once
 		// they land upstream.
 		// delete arr[i] leaves a hole, not a shorter array — splice/filter instead.
 		'typescript/no-array-delete': 'error',
@@ -69,6 +69,8 @@ export default defineConfig({
 		'typescript/no-unnecessary-type-conversion': 'error',
 		// A type param used once constrains nothing — inline it.
 		'typescript/no-unnecessary-type-parameters': 'error',
+		// Raw numbers or strings assigned to an enum bypass its member constraints.
+		'typescript/no-unsafe-enum-assignment': 'error',
 		// enumValue === "raw string" bypasses the enum's whole point.
 		'typescript/no-unsafe-enum-comparison': 'error',
 		// Unary minus on non-numbers produces NaN silently.

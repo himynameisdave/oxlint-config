@@ -60,7 +60,7 @@ bun run test:consumer    # packs the tarball, installs it in a scratch project, 
 
 ## 5. Ship
 
-- README: update the "~540" rule count if it moved meaningfully.
+- README: update the approximate rule count if it moved meaningfully.
 - Bump `peerDependencies.oxlint` to the version you just certified against (floor = the installed version `check-coverage` passed on). Update the README's floor line to match.
 - Version: rule churn of any kind (new rules, a rule flipped error↔off, options tightened) plus dep-range bumps = **minor**. Major is reserved for structural changes (oxlint major, a new plugin, an entry point renamed/removed).
 - Commit style: emoji + short subject, why in body (e.g. `⬆️ oxlint 1.80: decide 12 new rules`). List notable new errors in the body.
